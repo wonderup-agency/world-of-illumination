@@ -12,4 +12,9 @@
 // Both scaffold the file and add an entry here automatically.
 // --------------------------------------------------
 
-export default []
+export default [
+  {
+    selector: "[data-component='horizontal-scroll']",
+    importFn: () => import('./components/horizontal-scroll.js'),
+  },
+]

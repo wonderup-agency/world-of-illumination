@@ -1,0 +1,14 @@
+/* horizontal-scroll component
+   Structural CSS required for the scroll + curtain effect to work.
+   Visual styling (cards, images, headings) lives in Webflow. */
+
+[data-component='horizontal-scroll'] {
+  overflow: hidden;
+}
+
+/* Curtain mode: this section must stack above the pinned previous section
+   and be opaque so the previous one is fully covered as it rises over it. */
+[data-component='horizontal-scroll'][data-horizontal-pin] {
+  position: relative;
+  z-index: 2;
+}
