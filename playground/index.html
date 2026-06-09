@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Playground — World of Illumination · Story scroll</title>
+
+    <!-- GSAP + ScrollTrigger via CDN (same as Webflow global setup) -->
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Josefin+Sans:wght@600&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --blue-900: #000623;
+        --white: #f0efea;
+        --gold: #e3a336;
+        --teal: #4cba9f;
+        --heading: 'Archivo Black', system-ui, sans-serif;
+        --body: 'Josefin Sans', system-ui, sans-serif;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: var(--body);
+        background: var(--blue-900);
+        color: var(--white);
+      }
+
+      /* ── Surrounding sections (vertical scroll context) ───────────────── */
+      .filler {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        text-align: center;
+        font-family: var(--heading);
+        text-transform: uppercase;
+        font-size: clamp(1.5rem, 4vw, 3rem);
+        background: radial-gradient(circle at 50% 30%, #0d1340, var(--blue-900) 70%);
+      }
+      .filler--after {
+        background: #070b1c;
+      }
+
+      /* ── Story (the horizontal-scroll component) ──────────────────────── */
+      .story {
+        position: relative;
+        height: 100vh;
+        width: 100%;
+        overflow: hidden;
+        background: var(--blue-900);
+      }
+
+      /* Pinned base panel: stays put, gets covered by the curtain */
+      .panel--base {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+      }
+
+      /* The track holds every panel after the base and translates as one */
+      .track {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        display: flex;
+        flex-wrap: nowrap;
+        z-index: 2;
+        will-change: transform;
+      }
+
+      .panel {
+        position: relative;
+        flex: 0 0 100vw;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      /* Panel content helpers */
+      .panel__bg {
+        position: absolute;
+        inset: 0;
+      }
+      .panel__bg img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+      .panel__bg::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          to top,
+          rgba(0, 6, 35, 0.75),
+          rgba(0, 6, 35, 0.1) 60%
+        );
+      }
+      .panel__content {
+        position: relative;
+        z-index: 1;
+        height: 100%;
+        display: flex;
+        padding: 5vw;
+      }
+      .center {
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+      }
+      .end {
+        align-items: flex-end;
+      }
+
+      .h1 {
+        font-family: var(--heading);
+        text-transform: uppercase;
+        line-height: 1.1;
+        font-size: clamp(2.5rem, 5.5vw, 5rem);
+        max-width: 60rem;
+      }
+      .h1 .gold {
+        color: var(--gold);
+      }
+      .h1 .teal {
+        color: var(--teal);
+      }
+      .lead {
+        font-family: var(--heading);
+        text-transform: uppercase;
+        line-height: 1.4;
+        font-size: clamp(1.25rem, 2vw, 1.75rem);
+        max-width: 44rem;
+      }
+      .badge {
+        flex: 0 0 auto;
+        width: 8rem;
+        height: 8rem;
+        border: 2px solid var(--gold);
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        text-align: center;
+        font-family: var(--heading);
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        color: var(--gold);
+        line-height: 1.2;
+      }
+      .row {
+        display: flex;
+        gap: 2.5rem;
+        align-items: center;
+      }
+
+      /* ── Gallery (parallax layers) ────────────────────────────────────── */
+      .panel--gallery .panel__content {
+        align-items: center;
+      }
+      .gallery {
+        position: absolute;
+        inset: 0;
+        /* perspective set live by slider via --persp */
+        perspective: var(--persp, 800px);
+        transform-style: preserve-3d;
+      }
+      .gallery__text {
+        position: absolute;
+        left: 8vw;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 5;
+        max-width: 30rem;
+        font-family: var(--body);
+        font-size: 1.125rem;
+        line-height: 1.3;
+        text-shadow: 0 2px 24px rgba(0, 0, 0, 0.6);
+      }
+      .layer {
+        position: absolute;
+        border-radius: 0.75rem;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+        will-change: transform;
+      }
+      .layer img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      /* ── Dev sliders panel ────────────────────────────────────────────── */
+      .controls {
+        position: fixed;
+        right: 1rem;
+        bottom: 1rem;
+        z-index: 9999;
+        width: 16rem;
+        padding: 1rem;
+        border-radius: 0.75rem;
+        background: rgba(0, 6, 35, 0.85);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(240, 239, 234, 0.15);
+        font-family: var(--body);
+        font-size: 0.8rem;
+      }
+      .controls h3 {
+        font-family: var(--heading);
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.75rem;
+        color: var(--gold);
+      }
+      .controls label {
+        display: block;
+        margin: 0.6rem 0 0.15rem;
+        display: flex;
+        justify-content: space-between;
+      }
+      .controls input[type='range'] {
+        width: 100%;
+        accent-color: var(--teal);
+      }
+      .controls .toggle {
+        margin-top: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .track {
+          position: static;
+          flex-wrap: wrap;
+        }
+        .panel {
+          height: auto;
+          min-height: 70vh;
+        }
+        .panel--base {
+          position: static;
+          min-height: 70vh;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <section class="filler">Scroll down ↓</section>
+
+    <!-- ════════ STORY (horizontal-scroll component) ════════
+         Panel 1 has data-horizontal-scroll-pin → it stays pinned as the base.
+         Panel 2 slides in over it like a curtain, then panels 2..n scroll
+         horizontally as a normal train. -->
+    <section
+      data-component="horizontal-scroll"
+      data-horizontal-scroll-disable="mobileLandscape"
+      class="story"
+    >
+      <!-- Panel 1 — pinned base -->
+      <div
+        data-horizontal-scroll-panel
+        data-horizontal-scroll-pin
+        class="panel panel--base"
+      >
+        <div class="panel__content center">
+          <h1 class="h1">How it all <span class="gold">Began</span></h1>
+        </div>
+      </div>
+
+      <!-- Panel 2 — curtains over the base, then trains away -->
+      <div data-horizontal-scroll-panel class="panel">
+        <div class="panel__bg">
+          <img src="assets/story-bg-1.jpg" alt="People driving through the light show" />
+        </div>
+        <div class="panel__content end">
+          <div class="row">
+            <div class="badge">Founded 2016</div>
+            <p class="lead">
+              Built on a simple but powerful idea: light has the ability to stop
+              people in their tracks, bring them together, and make the world feel
+              a little more magical.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel 3 — GALLERY with parallax layers -->
+      <div data-horizontal-scroll-panel class="panel panel--gallery">
+        <div class="gallery" data-gallery>
+          <p class="gallery__text">
+            What started as a single show has grown into something we never
+            imagined. A decade later, we've toured cities nationwide, welcomed
+            millions of families, and we're still building new worlds every
+            season.
+          </p>
+
+          <div class="layer" data-depth="0.15"
+               style="left: 30%; top: 6%; width: 22vw; height: 26vh">
+            <img src="assets/g3.jpg" alt="" />
+          </div>
+          <div class="layer" data-depth="0.35"
+               style="left: 52%; top: 58%; width: 16vw; height: 24vh">
+            <img src="assets/g4.jpg" alt="" />
+          </div>
+          <div class="layer" data-depth="0.55"
+               style="left: 64%; top: 12%; width: 18vw; height: 30vh">
+            <img src="assets/g5.jpg" alt="" />
+          </div>
+          <div class="layer" data-depth="0.8"
+               style="left: 40%; top: 34%; width: 30vw; height: 38vh">
+            <img src="assets/g2.jpg" alt="" />
+          </div>
+          <div class="layer" data-depth="1"
+               style="left: 74%; top: 48%; width: 20vw; height: 30vh">
+            <img src="assets/g1.jpg" alt="" />
+          </div>
+          <div class="layer" data-depth="0.45"
+               style="left: 86%; top: 16%; width: 14vw; height: 22vh">
+            <img src="assets/g6.jpg" alt="" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel 4 — text over full-bleed image -->
+      <div data-horizontal-scroll-panel class="panel">
+        <div class="panel__bg">
+          <img src="assets/story-bg-2.jpg" alt="Car rolling through the illuminated tunnel" />
+        </div>
+        <div class="panel__content end">
+          <p class="lead">
+            We spend all year chasing one moment. Every theme, every light, every
+            note built for the second you roll through our gates and the world
+            outside disappears.
+          </p>
+        </div>
+      </div>
+
+      <!-- Panel 5 — closing statement -->
+      <div data-horizontal-scroll-panel class="panel">
+        <div class="panel__content center">
+          <h1 class="h1">
+            That is why we do this.
+            <span class="teal">And we are just getting started.</span>
+          </h1>
+        </div>
+      </div>
+    </section>
+
+    <section class="filler filler--after">The story continues ↓</section>
+
+    <!-- ════════ Dev controls ════════ -->
+    <aside class="controls">
+      <h3>Parallax controls</h3>
+      <label>Parallax X <span data-out="intensity">160</span>px</label>
+      <input type="range" id="intensity" min="0" max="500" value="160" />
+      <label>Perspective <span data-out="persp">800</span>px</label>
+      <input type="range" id="persp" min="300" max="2000" value="800" />
+      <label>Depth Z <span data-out="depthz">220</span>px</label>
+      <input type="range" id="depthz" min="0" max="800" value="220" />
+      <label class="toggle">
+        <input type="checkbox" id="markers" /> ScrollTrigger markers
+      </label>
+    </aside>
+
+    <script>
+      const PANEL_SELECTOR = '[data-horizontal-scroll-panel]'
+      const PIN_ATTR = 'data-horizontal-scroll-pin'
+
+      const { gsap, ScrollTrigger } = window
+      gsap.registerPlugin(ScrollTrigger)
+
+      // Live-tunable params (driven by the sliders)
+      const params = {
+        intensity: 160,
+        persp: 800,
+        depthz: 220,
+        markers: false,
+      }
+
+      let triggers = []
+      let track = null
+
+      function teardown() {
+        triggers.forEach((t) => t.kill())
+        triggers = []
+        gsap.killTweensOf('*')
+        // unwrap the track back into the section so we can rebuild cleanly
+        if (track) {
+          const section = track.closest("[data-component='horizontal-scroll']")
+          while (track.firstChild) section.insertBefore(track.firstChild, track)
+          track.remove()
+          track = null
+        }
+        document
+          .querySelectorAll('.layer, .track, .panel, .panel--base')
+          .forEach((el) => gsap.set(el, { clearProps: 'transform' }))
+      }
+
+      function build() {
+        const section = document.querySelector(
+          "[data-component='horizontal-scroll']"
+        )
+        if (!section) return
+
+        const panels = gsap.utils.toArray(PANEL_SELECTOR, section)
+        if (panels.length < 2) return
+
+        // Leading pinned panels stay as absolute bases; the rest go in a track.
+        const pinned = panels.filter((p) => p.hasAttribute(PIN_ATTR))
+        const moving = panels.filter((p) => !p.hasAttribute(PIN_ATTR))
+        if (!moving.length) return
+
+        pinned.forEach((p) => p.classList.add('panel--base'))
+
+        // Wrap moving panels in a single translating track.
+        track = document.createElement('div')
+        track.className = 'track'
+        section.appendChild(track)
+        moving.forEach((p) => track.appendChild(p))
+
+        const vw = () => window.innerWidth
+        const trainSteps = moving.length - 1 // curtain reveals the 1st moving panel
+
+        gsap.set(track, { x: vw })
+
+        const tl = gsap.timeline({
+          defaults: { ease: 'none' },
+          scrollTrigger: {
+            trigger: section,
+            start: 'top top',
+            end: () => '+=' + vw() * moving.length,
+            scrub: true,
+            pin: true,
+            invalidateOnRefresh: true,
+            markers: params.markers,
+          },
+        })
+        // Curtain: first moving panel slides in over the pinned base.
+        tl.to(track, { x: 0, duration: 1 })
+        // Train: the rest scroll horizontally as normal.
+        if (trainSteps > 0) {
+          tl.to(track, { x: () => -vw() * trainSteps, duration: trainSteps })
+        }
+        triggers.push(tl.scrollTrigger)
+
+        buildParallax(section, tl)
+      }
+
+      // Parallax: each layer drifts horizontally at a rate set by its depth,
+      // and sits at a different Z plane for real perspective. Driven by the
+      // gallery panel's position via containerAnimation.
+      function buildParallax(section, containerTl) {
+        const gallery = section.querySelector('[data-gallery]')
+        if (!gallery) return
+        gallery.style.setProperty('--persp', params.persp + 'px')
+
+        const layers = gsap.utils.toArray('.layer', gallery)
+        layers.forEach((layer) => {
+          const depth = parseFloat(layer.dataset.depth) || 0.5
+          gsap.set(layer, { z: (depth - 0.5) * params.depthz })
+
+          gsap.fromTo(
+            layer,
+            { xPercent: depth * (params.intensity / 5) },
+            {
+              xPercent: -depth * (params.intensity / 5),
+              ease: 'none',
+              scrollTrigger: {
+                trigger: gallery.closest('.panel'),
+                containerAnimation: containerTl,
+                start: 'left right',
+                end: 'right left',
+                scrub: true,
+              },
+            }
+          )
+          triggers.push(ScrollTrigger.getAll().slice(-1)[0])
+        })
+      }
+
+      // ── Sliders ──
+      function bindControls() {
+        const out = (id) => document.querySelector(`[data-out="${id}"]`)
+        ;['intensity', 'persp', 'depthz'].forEach((id) => {
+          const input = document.getElementById(id)
+          input.addEventListener('input', () => {
+            params[id] = +input.value
+            if (out(id)) out(id).textContent = input.value
+            teardown()
+            build()
+            ScrollTrigger.refresh()
+          })
+        })
+        const markers = document.getElementById('markers')
+        markers.addEventListener('change', () => {
+          params.markers = markers.checked
+          teardown()
+          build()
+          ScrollTrigger.refresh()
+        })
+      }
+
+      build()
+      bindControls()
+      window.addEventListener('load', () => ScrollTrigger.refresh())
+    </script>
+  </body>
+</html>

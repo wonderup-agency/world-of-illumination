@@ -1,0 +1,79 @@
+<!--
+  Component: horizontal-scroll
+  Reference markup (Webflow). Clean structure — no inline styles, no Webflow
+  runtime attributes. This is the real DOM the JS expects.
+
+  Attributes:
+  - data-component="horizontal-scroll"  → wrapper, triggers the component load
+  - data-horizontal-scroll-panel        → each panel (min. 2)
+  - data-horizontal-scroll-disable      → optional: "mobile" | "mobileLandscape" | "tablet"
+                                          (disables the effect at that breakpoint and below)
+  - data-horizontal-scroll-pin          → optional, put it on a PANEL. Switches the section
+                                          to curtain mode: the marked panel stays pinned as a
+                                          static base while the remaining panels slide in from
+                                          the right, stacking over it. Put it on the first panel
+                                          to keep the first one pinned. Omit it everywhere for
+                                          the classic "train" horizontal scroll.
+-->
+
+<section
+  data-component="horizontal-scroll"
+  data-horizontal-scroll-disable="mobileLandscape"
+  class="horizontal__wrap"
+>
+  <div
+    data-horizontal-scroll-panel
+    data-horizontal-scroll-pin
+    class="horizontal__panel"
+  >
+    <div class="horizontal__panel-inner">
+      <div class="demo-card">
+        <div class="demo-card__bg">
+          <img loading="lazy" src="" alt="Dolomites" class="demo-card__bg-img" />
+        </div>
+        <div class="demo-card__inner">
+          <h2 class="demo-header__h1">Dolomites</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div data-horizontal-scroll-panel class="horizontal__panel">
+    <div class="horizontal__panel-inner">
+      <div class="demo-card">
+        <div class="demo-card__bg">
+          <img loading="lazy" src="" alt="Patagonia" class="demo-card__bg-img" />
+        </div>
+        <div class="demo-card__inner">
+          <h2 class="demo-header__h1">Patagonia</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div data-horizontal-scroll-panel class="horizontal__panel">
+    <div class="horizontal__panel-inner">
+      <div class="demo-card">
+        <div class="demo-card__bg">
+          <img loading="lazy" src="" alt="Yosemite Park" class="demo-card__bg-img" />
+        </div>
+        <div class="demo-card__inner">
+          <h2 class="demo-header__h1">Yosemite Park</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div data-horizontal-scroll-panel class="horizontal__panel">
+    <div class="horizontal__panel-inner">
+      <div class="demo-card">
+        <div class="demo-card__bg">
+          <img loading="lazy" src="" alt="Pyrenees" class="demo-card__bg-img" />
+        </div>
+        <div class="demo-card__inner">
+          <h2 class="demo-header__h1">Pyrenees</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
