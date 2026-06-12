@@ -14,6 +14,14 @@
 
 export default [
   {
+    selector: "[data-component='locations']",
+    importFn: () => import('./components/locations.js'),
+  },
+  {
+    selector: "[data-component='testimonials']",
+    importFn: () => import('./components/testimonials.js'),
+  },
+  {
     selector: "[data-component='horizontal-scroll']",
     importFn: () => import('./components/horizontal-scroll.js'),
   },

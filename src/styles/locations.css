@@ -1,0 +1,44 @@
+/* Oculta slides hasta que Swiper inicialice para evitar el flash inicial */
+.locations-content .swiper:not(.swiper-initialized) {
+  overflow: hidden;
+}
+
+.locations-content .swiper:not(.swiper-initialized) .swiper-slide {
+  opacity: 0;
+}
+
+/* Una vez inicializado */
+.locations-content .swiper {
+  overflow: visible;
+}
+
+.locations-content .swiper-slide {
+  width: 440px;
+}
+
+.locations-content .swiper-slide .location_card-wrapper {
+  transform: scale(0.93);
+  opacity: 0.5;
+  transition:
+    transform 0.4s ease,
+    opacity 0.4s ease;
+}
+
+.locations-content .swiper-slide-active .location_card-wrapper {
+  transform: scale(1);
+  opacity: 1;
+}
+
+/* Tablet */
+@media (max-width: 991px) {
+  .locations-content .swiper-slide {
+    width: 280px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 479px) {
+  .locations-content .swiper-slide {
+    width: 220px;
+  }
+}

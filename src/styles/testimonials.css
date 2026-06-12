@@ -1,0 +1,13 @@
+.swiper-pagination {
+  position: relative;
+  text-align: center;
+}
+
+.swiper-pagination-bullet {
+  background: rgba(240, 239, 234, 0.4);
+  opacity: 1;
+}
+
+.swiper-pagination-bullet-active {
+  background: rgba(240, 239, 234, 1);
+}
