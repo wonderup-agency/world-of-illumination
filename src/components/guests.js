@@ -28,9 +28,13 @@ export default function (elements) {
             },
           }
         )
-      })
 
-      window.addEventListener('load', () => ScrollTrigger.refresh())
+        if (!img.complete) {
+          img.addEventListener('load', () => ScrollTrigger.refresh(), {
+            once: true,
+          })
+        }
+      })
     })
   })
 }
