@@ -29,6 +29,8 @@ export default function (elements) {
           }
         )
       })
+
+      window.addEventListener('load', () => ScrollTrigger.refresh())
     })
   })
 }
