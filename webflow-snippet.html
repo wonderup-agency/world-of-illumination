@@ -33,6 +33,10 @@ Setup:
 
 <script>
   ;(function () {
+    // Prevent browser scroll restoration so GSAP ScrollTrigger always
+    // initialises at progress 0 (scroll position = top of page on load).
+    if (history.scrollRestoration) history.scrollRestoration = 'manual'
+
     var dev = localStorage.dev
     var cdn =
       'https://cdn.jsdelivr.net/gh/wonderup-agency/world-of-illumination@main/dist'
