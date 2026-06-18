@@ -51,6 +51,7 @@
     "rollup-plugin-postcss": "^4.0.2"
   },
   "dependencies": {
+    "gsap": "^3.15.0",
     "swiper": "^12.2.0"
   }
 }

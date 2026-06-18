@@ -44,6 +44,6 @@
 
 ## Dependencies
 
-- **Runtime**: `picocolors` (used by scripts only, not bundled to browser), `swiper` (testimonials slider — Navigation, Pagination, A11y modules)
+- **Runtime**: `picocolors` (used by scripts only, not bundled to browser), `swiper` (testimonials slider — Navigation, Pagination, A11y modules), `gsap` (scroll-driven parallax animations — core + ScrollTrigger)
 - **Dev**: All other deps are devDependencies (Rollup, ESLint, Prettier, etc.)
 - No frontend framework — vanilla JavaScript only
