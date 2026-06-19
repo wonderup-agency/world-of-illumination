@@ -12,14 +12,13 @@ data-component="guests"
 
 ## Behavior
 
-- **Init**: On desktop (≥992px), reads `data-speed` from each image inside the section and creates a scrubbed ScrollTrigger tween — images travel from `y: speed×200` to `y: -(speed×200)` as the section scrolls from below to above the viewport. No effect on tablet/mobile (images are hidden via Webflow CSS at those breakpoints).
+- **Init**: On desktop (≥992px), reads `data-speed` from each image and attaches a `scroll` listener. On each scroll tick, calculates the section's progress through the viewport via `getBoundingClientRect()` and applies `y` via `gsap.quickSetter`. No effect on tablet/mobile.
 - **Resize**: Not used (gsap.matchMedia handles breakpoint cleanup automatically)
 - **Breakpoint**: Not used
 
 ## Dependencies
 
-- `gsap` — core
-- `gsap/ScrollTrigger` — scroll-scrubbed animation
+- `gsap` — core (`gsap.quickSetter` for performant DOM writes, `gsap.matchMedia` for breakpoint scoping)
 
 ## DOM Expectations
 
@@ -29,6 +28,6 @@ Elements matching `[data-component='guests']` must contain:
 
 ## Notes
 
-- The `yTravel` multiplier is `200`. Increase it for more dramatic movement, decrease for subtler.
-- `gsap.matchMedia('(min-width: 992px)')` scopes the effect to desktop only and auto-reverts on narrower viewports.
-- `ease: 'none'` is required for scrubbed ScrollTrigger animations.
+- The `yTravel` multiplier is `400`. Adjust for more/less dramatic movement.
+- Progress formula: `1 - section.getBoundingClientRect().bottom / (window.innerHeight + section.offsetHeight)`. 0 = section entering from below, 1 = section fully above viewport.
+- `gsap.matchMedia` auto-reverts and removes the scroll listener when dropping below 992px.

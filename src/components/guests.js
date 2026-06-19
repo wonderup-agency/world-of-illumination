@@ -1,7 +1,4 @@
 import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
-
-gsap.registerPlugin(ScrollTrigger)
 
 export default function (elements) {
   const mm = gsap.matchMedia()
@@ -10,27 +7,25 @@ export default function (elements) {
     mm.add('(min-width: 992px)', () => {
       const images = section.querySelectorAll('[data-speed]')
 
-      images.forEach((img) => {
-        const speed = parseFloat(img.dataset.speed) || 0.2
-        const yTravel = speed * 400
+      const items = Array.from(images).map((img) => ({
+        set: gsap.quickSetter(img, 'y', 'px'),
+        travel: (parseFloat(img.dataset.speed) || 0.2) * 400,
+      }))
 
-        gsap.to(img, {
-          y: -yTravel,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: section,
-            start: 'top bottom',
-            end: 'bottom top',
-            scrub: true,
-          },
-        })
+      function tick() {
+        const bottom = section.getBoundingClientRect().bottom
+        const total = window.innerHeight + section.offsetHeight
+        const progress = Math.max(0, Math.min(1, 1 - bottom / total))
+        items.forEach(({ set, travel }) => set(-progress * travel))
+      }
 
-        if (!img.complete) {
-          img.addEventListener('load', () => ScrollTrigger.refresh(), {
-            once: true,
-          })
-        }
-      })
+      tick()
+      window.addEventListener('scroll', tick, { passive: true })
+
+      return () => {
+        window.removeEventListener('scroll', tick)
+        items.forEach(({ set }) => set(0))
+      }
     })
   })
 }
