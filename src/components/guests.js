@@ -19,8 +19,16 @@ export default function (elements) {
         items.forEach(({ set, travel }) => set(-progress * travel))
       }
 
-      tick()
-      window.addEventListener('scroll', tick, { passive: true })
+      function waitForLayout() {
+        if (section.offsetHeight === 0) {
+          requestAnimationFrame(waitForLayout)
+          return
+        }
+        tick()
+        window.addEventListener('scroll', tick, { passive: true })
+      }
+
+      waitForLayout()
 
       return () => {
         window.removeEventListener('scroll', tick)

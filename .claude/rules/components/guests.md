@@ -12,7 +12,7 @@ data-component="guests"
 
 ## Behavior
 
-- **Init**: On desktop (≥992px), reads `data-speed` from each image and attaches a `scroll` listener. On each scroll tick, calculates the section's progress through the viewport via `getBoundingClientRect()` and applies `y` via `gsap.quickSetter`. No effect on tablet/mobile.
+- **Init**: On desktop (≥992px), waits via `requestAnimationFrame` until `section.offsetHeight > 0` (deferred to handle Webflow Interactions that initially hide the section), then calculates scroll progress via `getBoundingClientRect()` and applies `y` via `gsap.quickSetter` on each scroll tick. No effect on tablet/mobile.
 - **Resize**: Not used (gsap.matchMedia handles breakpoint cleanup automatically)
 - **Breakpoint**: Not used
 
