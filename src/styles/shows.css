@@ -1,0 +1,17 @@
+.show_orbit {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.show_item {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.show_item-featured {
+  display: none;
+}

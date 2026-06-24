@@ -14,6 +14,10 @@
 
 export default [
   {
+    selector: "[data-component='shows']",
+    importFn: () => import('./components/shows.js'),
+  },
+  {
     selector: "[data-component='guests']",
     importFn: () => import('./components/guests.js'),
   },
