@@ -1,0 +1,1 @@
+import e from"swiper";import{Navigation as r,A11y as o}from"swiper/modules";function t(t){t.forEach(t=>{const s=t.querySelector(".swiper"),i=t.querySelector(".slider-prev"),l=t.querySelector(".slider-next");s&&new e(s,{modules:[r,o],slidesPerView:"auto",centeredSlides:!0,grabCursor:!0,spaceBetween:24,navigation:{prevEl:i,nextEl:l},a11y:{enabled:!0}})})}export{t as default};
