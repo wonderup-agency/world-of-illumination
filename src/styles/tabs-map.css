@@ -1,0 +1,155 @@
+/*
+  tabs-map — structural / embed CSS.
+  Targets runtime-created elements (markers, cluster bubbles), Mapbox internals,
+  and the tab/panel + pill mechanics that the Webflow Designer can't reach.
+  Visual design of the cards, tabs and filters stays in Webflow.
+
+  Units: rem (1rem = 16px base). Exceptions kept in px: hairline borders and
+  box-shadow offsets.
+*/
+
+/* Tab panels: hidden unless active */
+.tickets-state_tab-item {
+  display: none;
+}
+.tickets-state_tab-item.is-active {
+  display: block;
+}
+
+/* List groups hidden by the state filter */
+.tickets-state_item.is-hidden {
+  display: none;
+}
+
+/* Animated pill — position/size set by JS; give it its look in Webflow */
+.tickets-state_tab-links {
+  position: relative;
+}
+.tickets-state_tab-link {
+  position: relative;
+  z-index: 1;
+}
+.tickets-state_tab-pill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  pointer-events: none;
+  transition:
+    transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Map container — sizes itself so it never depends on a positioned parent.
+   Targeted by attribute so it works regardless of the Webflow class name. */
+[data-tabs-map='map'] {
+  position: relative;
+  width: 100%;
+  height: min(78vh, 42.5rem);
+}
+
+/* Image marker (unclustered event) */
+.em-marker {
+  width: 3rem;
+  height: 3rem;
+  padding: 0;
+  border-radius: 50%;
+  border: 3px solid #4cba9f;
+  overflow: hidden;
+  cursor: pointer;
+  background: #000623;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  transition: transform 0.2s ease;
+}
+.em-marker:hover,
+.em-marker.is-active {
+  transform: scale(1.2);
+  z-index: 10;
+}
+.em-marker img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 0.375rem;
+}
+
+/* Cluster bubble */
+.em-cluster {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: #4cba9f;
+  color: #000623;
+  font-weight: 700;
+  cursor: pointer;
+  border: 3px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+.em-cluster.is-medium {
+  width: 3rem;
+  height: 3rem;
+}
+.em-cluster.is-large {
+  width: 3.625rem;
+  height: 3.625rem;
+  font-size: 1.1rem;
+}
+
+/* Floating detail card — positioned over the map, top-right. JS toggles
+   .is-active and sets the map's wrapper to position:relative so this anchors
+   to the map area (even when the card sits inside a Webflow .w-embed). */
+[data-tabs-map='map-card'] {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  left: auto;
+  bottom: auto;
+  width: 18.75rem;
+  max-width: calc(100% - 2.5rem);
+  z-index: 5;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(0.75rem);
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease,
+    visibility 0.25s ease;
+}
+[data-tabs-map='map-card'].is-active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+/* Nav arrows are styled in Webflow; just make them feel clickable. */
+[data-tabs-map='mc-prev'],
+[data-tabs-map='mc-next'] {
+  cursor: pointer;
+}
+/* Mobile: dock it to the bottom */
+@media (max-width: 47.9375rem) {
+  [data-tabs-map='map-card'] {
+    top: auto;
+    left: 0.75rem;
+    right: 0.75rem;
+    bottom: 0.75rem;
+    width: auto;
+  }
+}
+
+/* Mapbox overrides */
+.mapboxgl-ctrl-attrib,
+.mapboxgl-ctrl-logo {
+  display: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tickets-state_tab-pill,
+  .em-marker,
+  [data-tabs-map='map-card'] {
+    transition: none;
+  }
+}
