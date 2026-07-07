@@ -34,6 +34,10 @@ export default [
     importFn: () => import('./components/testimonials.js'),
   },
   {
+    selector: "[data-component='tabs-map']",
+    importFn: () => import('./components/tabs-map.js'),
+  },
+  {
     selector: "[data-component='horizontal-scroll']",
     importFn: () => import('./components/horizontal-scroll.js'),
   },

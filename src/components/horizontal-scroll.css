@@ -6,9 +6,35 @@
   overflow: hidden;
 }
 
-/* Curtain mode: this section must stack above the pinned previous section
-   and be opaque so the previous one is fully covered as it rises over it. */
-[data-component='horizontal-scroll'][data-horizontal-pin] {
+/* Curtain mode (added by JS): the section becomes a fixed-height stage. */
+[data-component='horizontal-scroll'].is-curtain {
   position: relative;
+  height: 100vh;
+}
+
+/* Pinned base panel(s): stay put behind the moving track and get covered. */
+[data-component='horizontal-scroll'].is-curtain .is-base {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+/* The moving track holds every non-pinned panel and translates as one. */
+[data-component='horizontal-scroll'] .horizontal__track {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-wrap: nowrap;
+  height: 100%;
   z-index: 2;
+  will-change: transform;
+}
+
+[data-component='horizontal-scroll'].is-curtain
+  .horizontal__track
+  [data-horizontal-scroll-panel] {
+  flex: 0 0 100vw;
+  width: 100vw;
+  height: 100vh;
 }

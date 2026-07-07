@@ -18,6 +18,7 @@ export default [
         clearInterval: 'readonly',
         requestAnimationFrame: 'readonly',
         cancelAnimationFrame: 'readonly',
+        getComputedStyle: 'readonly',
       },
     },
   },

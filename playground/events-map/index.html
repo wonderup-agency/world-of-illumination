@@ -1,0 +1,1004 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Playground — Tabs Map (List / Map)</title>
+
+    <!-- Mapbox GL JS via CDN — in Webflow this <link> goes in Site Settings → Custom Code → Head -->
+    <link
+      href="https://api.mapbox.com/mapbox-gl-js/v3.9.0/mapbox-gl.css"
+      rel="stylesheet"
+    />
+
+    <!-- Functional + embed CSS (see styles.css: what's copied to Webflow vs playground-only) -->
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+
+  <body>
+    <!--
+      ────────────────────────────────────────────────────────────────────────
+      DOM = the client's real Webflow structure (events-map-strucuture.html).
+      Only 3 things were added on top of it, all marked with  <!-- ✚ ADDED -->:
+    1. data-lat / data-lng on each .cms_ticket-item (the only Webflow binding
+    you need to add) 2. a pill element inside .tickets-state_tab-links
+    (JS-animated; style it in Webflow) 3. the map + floating card inside the
+    map-view panel (replaces the duplicated list) Everything else is untouched
+    so it still styles from Webflow's own CSS.
+    ──────────────────────────────────────────────────────────────────────── -->
+    <section class="section_show">
+      <div
+        data-wf--spacer-section--variant="large"
+        class="section_spacer"
+      ></div>
+      <div class="padding-global">
+        <div class="container-large">
+          <div data-component="tabs-map" class="tickets-state_tab-component">
+            <div class="tickets-state_tab-links">
+              <!-- ✚ ADDED: animated pill (style background/height in Webflow) -->
+              <div data-tabs-map="pill" class="tickets-state_tab-pill"></div>
+              <div
+                data-tabs-map="tab-link"
+                class="tickets-state_tab-link is-active"
+              >
+                <div
+                  data-margin-bottom=""
+                  data-text-size="m"
+                  class="text-style-wrap-balance"
+                >
+                  List View
+                </div>
+              </div>
+              <div data-tabs-map="tab-link" class="tickets-state_tab-link">
+                <div
+                  data-margin-bottom=""
+                  data-text-size="m"
+                  class="text-style-wrap-balance"
+                >
+                  Map View
+                </div>
+              </div>
+            </div>
+            <div class="tickets-state_tab-menu">
+              <!-- ══════════ LIST VIEW ══════════ -->
+              <div
+                data-tabs-map="list-view"
+                class="tickets-state_tab-item is-active"
+              >
+                <div class="tickets-state_filters">
+                  <div
+                    data-tabs-map="filter-all"
+                    class="tickets-state_state-item is-active"
+                  >
+                    <div
+                      data-margin-bottom=""
+                      data-text-size="m"
+                      class="text-style-wrap-balance"
+                    >
+                      All STates
+                    </div>
+                  </div>
+                  <div class="tickets-state_state-list-wrapper w-dyn-list">
+                    <div
+                      role="list"
+                      class="tickets-state_state-list w-dyn-items"
+                    >
+                      <div
+                        data-tabs-map="state"
+                        role="listitem"
+                        class="tickets-state_state-item w-dyn-item"
+                      >
+                        <div
+                          data-margin-bottom=""
+                          data-text-size="m"
+                          class="text-style-wrap-balance"
+                        >
+                          Tennesse
+                        </div>
+                      </div>
+                      <div
+                        data-tabs-map="state"
+                        role="listitem"
+                        class="tickets-state_state-item w-dyn-item"
+                      >
+                        <div
+                          data-margin-bottom=""
+                          data-text-size="m"
+                          class="text-style-wrap-balance"
+                        >
+                          Nevada
+                        </div>
+                      </div>
+                      <div
+                        data-tabs-map="state"
+                        role="listitem"
+                        class="tickets-state_state-item w-dyn-item"
+                      >
+                        <div
+                          data-margin-bottom=""
+                          data-text-size="m"
+                          class="text-style-wrap-balance"
+                        >
+                          Georgia
+                        </div>
+                      </div>
+                      <div
+                        data-tabs-map="state"
+                        role="listitem"
+                        class="tickets-state_state-item w-dyn-item"
+                      >
+                        <div
+                          data-margin-bottom=""
+                          data-text-size="m"
+                          class="text-style-wrap-balance"
+                        >
+                          Arizona
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="tickets-state_list-wrapper w-dyn-list">
+                  <div role="list" class="tickets-state_list w-dyn-items">
+                    <div role="listitem" class="tickets-state_item w-dyn-item">
+                      <h3 data-margin-bottom="" data-text-size="h4">
+                        Tennesse
+                      </h3>
+                      <div class="w-dyn-list">
+                        <div role="list" class="cms-tickets_cards w-dyn-items">
+                          <!-- ✚ ADDED: hidden lat/lng bound to CMS fields -->
+                          <div
+                            role="listitem"
+                            class="cms_ticket-item w-dyn-item"
+                          >
+                            <div
+                              data-tabs-map="item-lat"
+                              data-text-size="s"
+                              class="hide"
+                            >
+                              35.138618
+                            </div>
+                            <div
+                              data-tabs-map="item-lng"
+                              data-text-size="s"
+                              class="hide"
+                            >
+                              -89.832937
+                            </div>
+                            <div class="location_card-upper">
+                              <img
+                                src="https://cdn.prod.website-files.com/6a205e39ec626f3db3abd22f/6a445393a776bc712c08dc93_artic.png"
+                                loading="lazy"
+                                alt=""
+                                class="location_image"
+                              />
+                              <div class="location_date-wrapper">
+                                <div class="location_date">
+                                  December 12, 2026
+                                </div>
+                              </div>
+                              <div class="location_days-wrapper">
+                                <div class="location_days">
+                                  6:00 PM – 10:00 PM<br />
+                                </div>
+                              </div>
+                            </div>
+                            <div class="location_card-bottom">
+                              <div class="location_logo-wrapper">
+                                <img
+                                  src="https://cdn.prod.website-files.com/6a205e39ec626f3db3abd22f/6a2b4f920ba5e873e586b4ed_Theme%3DArctic.svg"
+                                  loading="lazy"
+                                  alt=""
+                                  class="location_logo"
+                                />
+                              </div>
+                              <div class="location_text-wrapper">
+                                <div
+                                  data-margin-bottom=""
+                                  data-text-size="h5"
+                                  class="text-style-wrap-balance"
+                                >
+                                  Memphis, TN
+                                </div>
+                                <div
+                                  data-margin-bottom=""
+                                  data-text-size="m"
+                                  class="text-style-wrap-balance"
+                                >
+                                  Shelby Farms Park
+                                </div>
+                              </div>
+                              <div class="tickets_price-wrapper">
+                                <div
+                                  data-margin-bottom=""
+                                  data-text-size="s"
+                                  class="text-style-muted"
+                                >
+                                  Starting at
+                                </div>
+                                <div class="price-wrapper">
+                                  <div
+                                    data-margin-bottom=""
+                                    data-text-size="h4"
+                                    class="text-style-wrap-balance"
+                                  >
+                                    $
+                                  </div>
+                                  <div
+                                    data-margin-bottom=""
+                                    data-text-size="h4"
+                                    class="text-style-wrap-balance"
+                                  >
+                                    39.99
+                                  </div>
+                                </div>
+                                <div
+                                  data-margin-bottom=""
+                                  data-text-size="s"
+                                  class="text-style-muted"
+                                >
+                                  per car
+                                </div>
+                              </div>
+                            </div>
+                            <div class="location_bottom-wrapper is-full">
+                              <div
+                                data-padding-bottom="16"
+                                class="spacer"
+                              ></div>
+                              <div data-elastic-pulse-btn="" class="button">
+                                <a
+                                  href="/tickets/memphis-tennessee-shelby-farms-park-christmas"
+                                  class="item-link w-inline-block"
+                                ></a>
+                                <div
+                                  data-elastic-pulse-target=""
+                                  class="button_main-content"
+                                >
+                                  <div class="button_main-content-text">
+                                    <span class="elastic-pulse-btn__span"
+                                      >GET TICKETS</span
+                                    >
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div role="listitem" class="tickets-state_item w-dyn-item">
+                      <h3 data-margin-bottom="" data-text-size="h4">Nevada</h3>
+                      <div class="w-dyn-list">
+                        <div role="list" class="cms-tickets_cards w-dyn-items">
+                          <div
+                            role="listitem"
+                            class="cms_ticket-item w-dyn-item"
+                          >
+                            <div
+                              data-tabs-map="item-lat"
+                              data-text-size="s"
+                              class="hide"
+                            >
+                              36.072157
+                            </div>
+                            <div
+                              data-tabs-map="item-lng"
+                              data-text-size="s"
+                              class="hide"
+                            >
+                              -115.025110
+                            </div>
+                            <div class="location_card-upper">
+                              <img
+                                src="https://cdn.prod.website-files.com/6a205e39ec626f3db3abd22f/6a4453e333ad14f1975d1d0e_safari.png"
+                                loading="lazy"
+                                alt=""
+                                class="location_image"
+                              />
+                              <div class="location_date-wrapper">
+                                <div class="location_date">
+                                  December 12, 2026
+                                </div>
+                              </div>
+                              <div class="location_days-wrapper">
+                                <div class="location_days">
+                                  6:00 PM – 10:00 PM<br />
+                                </div>
+                              </div>
+                            </div>
+                            <div class="location_card-bottom">
+                              <div class="location_logo-wrapper">
+                                <img
+                                  src="https://cdn.prod.website-files.com/6a205e39ec626f3db3abd22f/6a2b4fca24fa567445bf09a4_Theme%3DSafari.svg"
+                                  loading="lazy"
+                                  alt=""
+                                  class="location_logo"
+                                />
+                              </div>
+                              <div class="location_text-wrapper">
+                                <div
+                                  data-margin-bottom=""
+                                  data-text-size="h5"
+                                  class="text-style-wrap-balance"
+                                >
+                                  Las Vegas, NV
+                                </div>
+                                <div
+                                  data-margin-bottom=""
+                                  data-text-size="m"
+                                  class="text-style-wrap-balance"
+                                >
+                                  Cowabunga Bay Water Park
+                                </div>
+                              </div>
+                              <div class="tickets_price-wrapper">
+                                <div
+                                  data-margin-bottom=""
+                                  data-text-size="s"
+                                  class="text-style-muted"
+                                >
+                                  Starting at
+                                </div>
+                                <div class="price-wrapper">
+                                  <div
+                                    data-margin-bottom=""
+                                    data-text-size="h4"
+                                    class="text-style-wrap-balance"
+                                  >
+                                    $
+                                  </div>
+                                  <div
+                                    data-margin-bottom=""
+                                    data-text-size="h4"
+                                    class="text-style-wrap-balance"
+                                  >
+                                    39.99
+                                  </div>
+                                </div>
+                                <div
+                                  data-margin-bottom=""
+                                  data-text-size="s"
+                                  class="text-style-muted"
+                                >
+                                  per car
+                                </div>
+                              </div>
+                            </div>
+                            <div class="location_bottom-wrapper is-full">
+                              <div
+                                data-padding-bottom="16"
+                                class="spacer"
+                              ></div>
+                              <div data-elastic-pulse-btn="" class="button">
+                                <a
+                                  href="/tickets/las-vegas-nevada-cowabunga-bay-christmas"
+                                  class="item-link w-inline-block"
+                                ></a>
+                                <div
+                                  data-elastic-pulse-target=""
+                                  class="button_main-content"
+                                >
+                                  <div class="button_main-content-text">
+                                    <span class="elastic-pulse-btn__span"
+                                      >GET TICKETS</span
+                                    >
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div role="listitem" class="tickets-state_item w-dyn-item">
+                      <h3 data-margin-bottom="" data-text-size="h4">Georgia</h3>
+                      <div class="w-dyn-list">
+                        <div role="list" class="cms-tickets_cards w-dyn-items">
+                          <div
+                            role="listitem"
+                            class="cms_ticket-item w-dyn-item"
+                          >
+                            <div
+                              data-tabs-map="item-lat"
+                              data-text-size="s"
+                              class="hide"
+                            >
+                              33.958184
+                            </div>
+                            <div
+                              data-tabs-map="item-lng"
+                              data-text-size="s"
+                              class="hide"
+                            >
+                              -84.521300
+                            </div>
+                            <div class="location_card-upper">
+                              <img
+                                src="https://cdn.prod.website-files.com/6a205e39ec626f3db3abd22f/6a4453c2f794bfb5efc9af60_rockin.png"
+                                loading="lazy"
+                                alt=""
+                                class="location_image"
+                              />
+                              <div class="location_date-wrapper">
+                                <div class="location_date">
+                                  December 12, 2026
+                                </div>
+                              </div>
+                              <div class="location_days-wrapper">
+                                <div class="location_days">
+                                  6:00 PM – 10:00 PM<br />
+                                </div>
+                              </div>
+                            </div>
+                            <div class="location_card-bottom">
+                              <div class="location_logo-wrapper">
+                                <img
+                                  src="https://cdn.prod.website-files.com/6a205e39ec626f3db3abd22f/6a2b4f158dadda218e5d9307_Theme%3DRockin.svg"
+                                  loading="lazy"
+                                  alt=""
+                                  class="location_logo"
+                                />
+                              </div>
+                              <div class="location_text-wrapper">
+                                <div
+                                  data-margin-bottom=""
+                                  data-text-size="h5"
+                                  class="text-style-wrap-balance"
+                                >
+                                  Marietta, GA
+                                </div>
+                                <div
+                                  data-margin-bottom=""
+                                  data-text-size="m"
+                                  class="text-style-wrap-balance"
+                                >
+                                  Six Flags White Water
+                                </div>
+                              </div>
+                              <div class="tickets_price-wrapper">
+                                <div
+                                  data-margin-bottom=""
+                                  data-text-size="s"
+                                  class="text-style-muted"
+                                >
+                                  Starting at
+                                </div>
+                                <div class="price-wrapper">
+                                  <div
+                                    data-margin-bottom=""
+                                    data-text-size="h4"
+                                    class="text-style-wrap-balance"
+                                  >
+                                    $
+                                  </div>
+                                  <div
+                                    data-margin-bottom=""
+                                    data-text-size="h4"
+                                    class="text-style-wrap-balance"
+                                  >
+                                    39.99
+                                  </div>
+                                </div>
+                                <div
+                                  data-margin-bottom=""
+                                  data-text-size="s"
+                                  class="text-style-muted"
+                                >
+                                  per car
+                                </div>
+                              </div>
+                            </div>
+                            <div class="location_bottom-wrapper is-full">
+                              <div
+                                data-padding-bottom="16"
+                                class="spacer"
+                              ></div>
+                              <div data-elastic-pulse-btn="" class="button">
+                                <a
+                                  href="/tickets/marietta-georgia-six-flags-white-water-christmas"
+                                  class="item-link w-inline-block"
+                                ></a>
+                                <div
+                                  data-elastic-pulse-target=""
+                                  class="button_main-content"
+                                >
+                                  <div class="button_main-content-text">
+                                    <span class="elastic-pulse-btn__span"
+                                      >GET TICKETS</span
+                                    >
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div role="listitem" class="tickets-state_item w-dyn-item">
+                      <h3 data-margin-bottom="" data-text-size="h4">Arizona</h3>
+                      <div class="w-dyn-list">
+                        <div role="list" class="cms-tickets_cards w-dyn-items">
+                          <div
+                            role="listitem"
+                            class="cms_ticket-item w-dyn-item"
+                          >
+                            <div
+                              data-tabs-map="item-lat"
+                              data-text-size="s"
+                              class="hide"
+                            >
+                              33.547976
+                            </div>
+                            <div
+                              data-tabs-map="item-lng"
+                              data-text-size="s"
+                              class="hide"
+                            >
+                              -112.262019
+                            </div>
+                            <div class="location_card-upper">
+                              <img
+                                src="https://cdn.prod.website-files.com/6a205e39ec626f3db3abd22f/6a39ad3b8e8b0c96acb2cfec_candy.png"
+                                loading="lazy"
+                                alt=""
+                                class="location_image"
+                              />
+                              <div class="location_date-wrapper">
+                                <div class="location_date">June 20, 2026</div>
+                              </div>
+                              <div class="location_days-wrapper">
+                                <div class="location_days">
+                                  6:00 PM – 10:00 PM<br />
+                                </div>
+                              </div>
+                            </div>
+                            <div class="location_card-bottom">
+                              <div class="location_logo-wrapper">
+                                <img
+                                  src="https://cdn.prod.website-files.com/6a205e39ec626f3db3abd22f/6a2b49c1e02ead14fc478c03_Theme%3DCandy.svg"
+                                  loading="lazy"
+                                  alt=""
+                                  class="location_logo"
+                                />
+                              </div>
+                              <div class="location_text-wrapper">
+                                <div
+                                  data-margin-bottom=""
+                                  data-text-size="h5"
+                                  class="text-style-wrap-balance"
+                                >
+                                  Glendale, AZ
+                                </div>
+                                <div
+                                  data-margin-bottom=""
+                                  data-text-size="m"
+                                  class="text-style-wrap-balance"
+                                >
+                                  Desert Diamond Casino
+                                </div>
+                              </div>
+                              <div class="tickets_price-wrapper">
+                                <div
+                                  data-margin-bottom=""
+                                  data-text-size="s"
+                                  class="text-style-muted"
+                                >
+                                  Starting at
+                                </div>
+                                <div class="price-wrapper">
+                                  <div
+                                    data-margin-bottom=""
+                                    data-text-size="h4"
+                                    class="text-style-wrap-balance"
+                                  >
+                                    $
+                                  </div>
+                                  <div
+                                    data-margin-bottom=""
+                                    data-text-size="h4"
+                                    class="text-style-wrap-balance"
+                                  >
+                                    39.99
+                                  </div>
+                                </div>
+                                <div
+                                  data-margin-bottom=""
+                                  data-text-size="s"
+                                  class="text-style-muted"
+                                >
+                                  per car
+                                </div>
+                              </div>
+                            </div>
+                            <div class="location_bottom-wrapper is-full">
+                              <div
+                                data-padding-bottom="16"
+                                class="spacer"
+                              ></div>
+                              <div data-elastic-pulse-btn="" class="button">
+                                <a
+                                  href="/tickets/glendale-arizona-desert-diamond-casino-christmas"
+                                  class="item-link w-inline-block"
+                                ></a>
+                                <div
+                                  data-elastic-pulse-target=""
+                                  class="button_main-content"
+                                >
+                                  <div class="button_main-content-text">
+                                    <span class="elastic-pulse-btn__span"
+                                      >GET TICKETS</span
+                                    >
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div
+                            role="listitem"
+                            class="cms_ticket-item w-dyn-item"
+                          >
+                            <div
+                              data-tabs-map="item-lat"
+                              data-text-size="s"
+                              class="hide"
+                            >
+                              33.548600
+                            </div>
+                            <div
+                              data-tabs-map="item-lng"
+                              data-text-size="s"
+                              class="hide"
+                            >
+                              -112.261000
+                            </div>
+                            <div class="location_card-upper">
+                              <img
+                                src="https://cdn.prod.website-files.com/6a205e39ec626f3db3abd22f/6a4453c2f794bfb5efc9af60_rockin.png"
+                                loading="lazy"
+                                alt=""
+                                class="location_image"
+                              />
+                              <div class="location_date-wrapper">
+                                <div class="location_date">
+                                  October 10, 2026
+                                </div>
+                              </div>
+                              <div class="location_days-wrapper">
+                                <div class="location_days">
+                                  6:00 PM – 10:00 PM<br />
+                                </div>
+                              </div>
+                            </div>
+                            <div class="location_card-bottom">
+                              <div class="location_logo-wrapper">
+                                <img
+                                  src="https://cdn.prod.website-files.com/6a205e39ec626f3db3abd22f/6a42ab68b0c23afe9e7c4509_logo_zoo.svg"
+                                  loading="lazy"
+                                  alt=""
+                                  class="location_logo"
+                                />
+                              </div>
+                              <div class="location_text-wrapper">
+                                <div
+                                  data-margin-bottom=""
+                                  data-text-size="h5"
+                                  class="text-style-wrap-balance"
+                                >
+                                  Glendale, AZ
+                                </div>
+                                <div
+                                  data-margin-bottom=""
+                                  data-text-size="m"
+                                  class="text-style-wrap-balance"
+                                >
+                                  Desert Diamond Casino
+                                </div>
+                              </div>
+                              <div class="tickets_price-wrapper">
+                                <div
+                                  data-margin-bottom=""
+                                  data-text-size="s"
+                                  class="text-style-muted"
+                                >
+                                  Starting at
+                                </div>
+                                <div class="price-wrapper">
+                                  <div
+                                    data-margin-bottom=""
+                                    data-text-size="h4"
+                                    class="text-style-wrap-balance"
+                                  >
+                                    $
+                                  </div>
+                                  <div
+                                    data-margin-bottom=""
+                                    data-text-size="h4"
+                                    class="text-style-wrap-balance"
+                                  >
+                                    39.99
+                                  </div>
+                                </div>
+                                <div
+                                  data-margin-bottom=""
+                                  data-text-size="s"
+                                  class="text-style-muted"
+                                >
+                                  per car
+                                </div>
+                              </div>
+                            </div>
+                            <div class="location_bottom-wrapper is-full">
+                              <div
+                                data-padding-bottom="16"
+                                class="spacer"
+                              ></div>
+                              <div data-elastic-pulse-btn="" class="button">
+                                <a
+                                  href="/tickets/glendale-arizona-desert-diamond-casino-halloween"
+                                  class="item-link w-inline-block"
+                                ></a>
+                                <div
+                                  data-elastic-pulse-target=""
+                                  class="button_main-content"
+                                >
+                                  <div class="button_main-content-text">
+                                    <span class="elastic-pulse-btn__span"
+                                      >GET TICKETS</span
+                                    >
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div
+                            role="listitem"
+                            class="cms_ticket-item w-dyn-item"
+                          >
+                            <div
+                              data-tabs-map="item-lat"
+                              data-text-size="s"
+                              class="hide"
+                            >
+                              33.400692
+                            </div>
+                            <div
+                              data-tabs-map="item-lng"
+                              data-text-size="s"
+                              class="hide"
+                            >
+                              -111.971047
+                            </div>
+                            <div class="location_card-upper">
+                              <img
+                                src="https://cdn.prod.website-files.com/6a205e39ec626f3db3abd22f/6a4453cd1f0e4b19599f08d8_reindeer.png"
+                                loading="lazy"
+                                alt=""
+                                class="location_image"
+                              />
+                              <div class="location_date-wrapper">
+                                <div class="location_date">
+                                  November 19, 2026
+                                </div>
+                              </div>
+                              <div class="location_days-wrapper">
+                                <div class="location_days">
+                                  6:00 PM – 10:00 PM<br />
+                                </div>
+                              </div>
+                            </div>
+                            <div class="location_card-bottom">
+                              <div class="location_logo-wrapper">
+                                <img
+                                  src="https://cdn.prod.website-files.com/6a205e39ec626f3db3abd22f/6a2b4f4d75e2d413276c6be1_Theme%3DReindeer.svg"
+                                  loading="lazy"
+                                  alt=""
+                                  class="location_logo"
+                                />
+                              </div>
+                              <div class="location_text-wrapper">
+                                <div
+                                  data-margin-bottom=""
+                                  data-text-size="h5"
+                                  class="text-style-wrap-balance"
+                                >
+                                  Tempe, AZ
+                                </div>
+                                <div
+                                  data-margin-bottom=""
+                                  data-text-size="m"
+                                  class="text-style-wrap-balance"
+                                >
+                                  Tempe Diablo Stadium
+                                </div>
+                              </div>
+                              <div class="tickets_price-wrapper">
+                                <div
+                                  data-margin-bottom=""
+                                  data-text-size="s"
+                                  class="text-style-muted"
+                                >
+                                  Starting at
+                                </div>
+                                <div class="price-wrapper">
+                                  <div
+                                    data-margin-bottom=""
+                                    data-text-size="h4"
+                                    class="text-style-wrap-balance"
+                                  >
+                                    $
+                                  </div>
+                                  <div
+                                    data-margin-bottom=""
+                                    data-text-size="h4"
+                                    class="text-style-wrap-balance"
+                                  >
+                                    39.99
+                                  </div>
+                                </div>
+                                <div
+                                  data-margin-bottom=""
+                                  data-text-size="s"
+                                  class="text-style-muted"
+                                >
+                                  per car
+                                </div>
+                              </div>
+                            </div>
+                            <div class="location_bottom-wrapper is-full">
+                              <div
+                                data-padding-bottom="16"
+                                class="spacer"
+                              ></div>
+                              <div data-elastic-pulse-btn="" class="button">
+                                <a
+                                  href="/tickets/tempe-arizona-diablo-stadium-christmas"
+                                  class="item-link w-inline-block"
+                                ></a>
+                                <div
+                                  data-elastic-pulse-target=""
+                                  class="button_main-content"
+                                >
+                                  <div class="button_main-content-text">
+                                    <span class="elastic-pulse-btn__span"
+                                      >GET TICKETS</span
+                                    >
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ══════════ MAP VIEW ══════════ -->
+              <div data-tabs-map="map-view" class="tickets-state_tab-item">
+                <div class="tickets-state_filters">
+                  <div
+                    data-tabs-map="filter-all"
+                    class="tickets-state_state-item is-active"
+                  >
+                    <div
+                      data-margin-bottom=""
+                      data-text-size="m"
+                      class="text-style-wrap-balance"
+                    >
+                      All STates
+                    </div>
+                  </div>
+                  <div class="tickets-state_state-list-wrapper w-dyn-list">
+                    <div
+                      role="list"
+                      class="tickets-state_state-list w-dyn-items"
+                    >
+                      <div
+                        data-tabs-map="state"
+                        role="listitem"
+                        class="tickets-state_state-item w-dyn-item"
+                      >
+                        <div
+                          data-margin-bottom=""
+                          data-text-size="m"
+                          class="text-style-wrap-balance"
+                        >
+                          Tennesse
+                        </div>
+                      </div>
+                      <div
+                        data-tabs-map="state"
+                        role="listitem"
+                        class="tickets-state_state-item w-dyn-item"
+                      >
+                        <div
+                          data-margin-bottom=""
+                          data-text-size="m"
+                          class="text-style-wrap-balance"
+                        >
+                          Nevada
+                        </div>
+                      </div>
+                      <div
+                        data-tabs-map="state"
+                        role="listitem"
+                        class="tickets-state_state-item w-dyn-item"
+                      >
+                        <div
+                          data-margin-bottom=""
+                          data-text-size="m"
+                          class="text-style-wrap-balance"
+                        >
+                          Georgia
+                        </div>
+                      </div>
+                      <div
+                        data-tabs-map="state"
+                        role="listitem"
+                        class="tickets-state_state-item w-dyn-item"
+                      >
+                        <div
+                          data-margin-bottom=""
+                          data-text-size="m"
+                          class="text-style-wrap-balance"
+                        >
+                          Arizona
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- ✚ ADDED: map + floating detail card (replaces the duplicated list) -->
+                <div class="tickets-state_map-wrapper">
+                  <div data-tabs-map="map" class="tickets-state_map"></div>
+
+                  <!-- Floating card. The JS clones the selected event's own
+                       .cms_ticket-item into the slot, so it looks exactly like
+                       the list card and inherits all its Webflow styling. -->
+                  <div
+                    data-tabs-map="map-card"
+                    class="tickets-state_map-card"
+                    aria-live="polite"
+                  >
+                    <div class="tickets-state_mc-nav">
+                      <button
+                        data-tabs-map="mc-prev"
+                        class="tickets-state_mc-nav-button"
+                        aria-label="Previous event"
+                      >
+                        ←
+                      </button>
+                      <button
+                        data-tabs-map="mc-next"
+                        class="tickets-state_mc-nav-button"
+                        aria-label="Next event"
+                      >
+                        →
+                      </button>
+                    </div>
+                    <div
+                      data-tabs-map="mc-slot"
+                      class="tickets-state_mc-slot"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        data-wf--spacer-section--variant="large"
+        class="section_spacer"
+      ></div>
+    </section>
+
+    <!-- Mapbox GL JS — in Webflow this goes before </body> in Site Settings → Custom Code -->
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.9.0/mapbox-gl.js"></script>
+    <!-- Component logic -->
+    <script src="./script.js"></script>
+  </body>
+</html>
