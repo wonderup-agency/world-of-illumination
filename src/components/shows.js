@@ -20,15 +20,20 @@ export default function (elements) {
     const N = shows.length
     const STEP_DURATION = 0.8
     const SHOW_DURATION = 4
-    const ACTIVE_SCALE = 2       // slot 0 logo is 2× the orbit logo size — adjust to match design
-    const rem = parseFloat(getComputedStyle(document.documentElement).fontSize)
-    const FEATURED_OFFSET = 6 * rem  // 6rem gap between featured logo and orbit arc top
+    const ACTIVE_SCALE = 2 // slot 0 logo is 2× the orbit logo size — adjust to match design
+    const rem = parseFloat(
+      window.getComputedStyle(document.documentElement).fontSize
+    )
+    const FEATURED_OFFSET = 6 * rem // 6rem gap between featured logo and orbit arc top
     const VISIBLE_ANGLE = (155 / 180) * Math.PI
     const FADE_ANGLE = (20 / 180) * Math.PI
 
     let advanceTimer = null
-    let featureImgBack = null  // back layer for true crossfade
-    let cx = 0, cy = 0, rx = 0, ry = 0
+    let featureImgBack = null // back layer for true crossfade
+    let cx = 0,
+      cy = 0,
+      rx = 0,
+      ry = 0
 
     function computeLayout() {
       const orbitRect = orbit.getBoundingClientRect()
@@ -42,7 +47,7 @@ export default function (elements) {
     }
 
     function slotOpacity(slot) {
-      const angle = (2 * Math.PI / N) * slot
+      const angle = ((2 * Math.PI) / N) * slot
       const distFromTop = Math.min(angle, 2 * Math.PI - angle)
       if (distFromTop >= VISIBLE_ANGLE) return 0
       if (distFromTop >= VISIBLE_ANGLE - FADE_ANGLE) {
@@ -60,7 +65,7 @@ export default function (elements) {
     }
 
     function slotXY(slot) {
-      const angle = (2 * Math.PI / N) * slot
+      const angle = ((2 * Math.PI) / N) * slot
       return {
         x: cx + rx * Math.sin(angle),
         y: cy - ry * Math.cos(angle) - (slot === 0 ? FEATURED_OFFSET : 0),
@@ -102,7 +107,12 @@ export default function (elements) {
         gsap.killTweensOf([featureImg, featureImgBack])
         swapImg(featureImgBack, show.feature)
         gsap.set(featureImgBack, { autoAlpha: 0 })
-        gsap.to(featureImgBack, { autoAlpha: 1, duration: 0.5, delay, ease: 'power2.inOut' })
+        gsap.to(featureImgBack, {
+          autoAlpha: 1,
+          duration: 0.5,
+          delay,
+          ease: 'power2.inOut',
+        })
         gsap.to(featureImg, {
           autoAlpha: 0,
           duration: 0.5,
@@ -123,7 +133,11 @@ export default function (elements) {
           ease: 'power2.in',
           onComplete: () => {
             swapImg(featureImg, show.feature)
-            gsap.to(featureImg, { autoAlpha: 1, duration: 0.4, ease: 'power2.out' })
+            gsap.to(featureImg, {
+              autoAlpha: 1,
+              duration: 0.4,
+              ease: 'power2.out',
+            })
           },
         })
       }
@@ -149,7 +163,12 @@ export default function (elements) {
 
         if (oldOpacity === 0 && newOpacity > 0.1) {
           // Coming from hidden: teleport to position, then fade in
-          gsap.set(show.el, { x, y, scale: slotScale(show.slot), filter: slotFilter(show.slot) })
+          gsap.set(show.el, {
+            x,
+            y,
+            scale: slotScale(show.slot),
+            filter: slotFilter(show.slot),
+          })
           gsap.to(show.el, {
             opacity: newOpacity,
             duration: STEP_DURATION * 0.6,
@@ -226,8 +245,17 @@ export default function (elements) {
         const prev = mobileIndex
         mobileIndex = (mobileIndex + 1) % N
 
-        gsap.to(shows[prev].el, { autoAlpha: 0, duration: 0.4, ease: 'power2.in' })
-        gsap.to(shows[mobileIndex].el, { autoAlpha: 1, duration: 0.4, delay: 0.4, ease: 'power2.out' })
+        gsap.to(shows[prev].el, {
+          autoAlpha: 0,
+          duration: 0.4,
+          ease: 'power2.in',
+        })
+        gsap.to(shows[mobileIndex].el, {
+          autoAlpha: 1,
+          duration: 0.4,
+          delay: 0.4,
+          ease: 'power2.out',
+        })
         updateCircle(shows[mobileIndex])
 
         mobileTimer = gsap.delayedCall(SHOW_DURATION + 0.8, mobileCycle)
@@ -279,7 +307,9 @@ export default function (elements) {
           featureImgBack = null
         }
         featureImg.parentElement.style.position = ''
-        shows.forEach((show, i) => { show.slot = i })
+        shows.forEach((show, i) => {
+          show.slot = i
+        })
         shows.forEach((show) => gsap.set(show.el, { clearProps: 'all' }))
         gsap.set(featureImg, { clearProps: 'all' })
       }
