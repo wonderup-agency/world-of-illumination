@@ -14,6 +14,10 @@
 
 export default [
   {
+    selector: "[data-component='elastic-pulse-button']",
+    importFn: () => import('./components/elastic-pulse-button.js'),
+  },
+  {
     selector: "[data-component='location-map']",
     importFn: () => import('./components/location-map.js'),
   },
