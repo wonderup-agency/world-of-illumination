@@ -18,6 +18,10 @@ export default [
     importFn: () => import('./components/location-map.js'),
   },
   {
+    selector: "[data-component='text-fill']",
+    importFn: () => import('./components/text-fill.js'),
+  },
+  {
     selector: "[data-component='marquee']",
     importFn: () => import('./components/marquee.js'),
   },
