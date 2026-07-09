@@ -14,6 +14,10 @@
 
 export default [
   {
+    selector: "[data-component='location-map']",
+    importFn: () => import('./components/location-map.js'),
+  },
+  {
     selector: "[data-component='marquee']",
     importFn: () => import('./components/marquee.js'),
   },

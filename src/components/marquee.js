@@ -17,7 +17,9 @@ export default function (elements) {
     const track = el.querySelector('.marquee_track')
     if (!track) return
 
-    const baseItems = Array.from(track.children).map((item) => item.cloneNode(true))
+    const baseItems = Array.from(track.children).map((item) =>
+      item.cloneNode(true)
+    )
 
     const fill = () => {
       track.innerHTML = ''

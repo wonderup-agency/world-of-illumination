@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Playground — Location Map (single location)</title>
+
+    <!-- Mapbox GL JS via CDN — in Webflow this <link> goes in Site Settings → Custom Code → Head -->
+    <link
+      href="https://api.mapbox.com/mapbox-gl-js/v3.9.0/mapbox-gl.css"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+
+  <body>
+    <div class="padding-global">
+      <h1>Location Map</h1>
+
+      <!--
+        The ONLY Webflow binding: data-map-lat / data-map-lng on the wrapper.
+        Optional: a .location_logo image inside → used as the marker face.
+        Remove the logo below to see the plain pin fallback.
+      -->
+      <div
+        data-component="location-map"
+        data-map-lat="35.1495"
+        data-map-lng="-90.0490"
+        class="location-map_wrapper"
+      >
+        <img
+          class="location_logo hide"
+          src="../assets/g1.jpg"
+          alt=""
+          style="display: none"
+        />
+        <div data-map="map" class="location-map_map"></div>
+      </div>
+    </div>
+
+    <!-- Mapbox GL JS — in Webflow this goes Before </body> -->
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.9.0/mapbox-gl.js"></script>
+    <script src="./script.js"></script>
+  </body>
+</html>

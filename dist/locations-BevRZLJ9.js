@@ -1,1 +1,0 @@
-import{S as e,N as r,A as a}from"./a11y-D9pUmbpq.js";function s(s){s.forEach(s=>{const t=s.querySelector(".swiper"),o=s.querySelector(".slider-prev"),l=s.querySelector(".slider-next");t&&new e(t,{modules:[r,a],slidesPerView:"auto",centeredSlides:!0,grabCursor:!0,spaceBetween:24,navigation:{prevEl:o,nextEl:l},a11y:{enabled:!0}})})}export{s as default};

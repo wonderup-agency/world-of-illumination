@@ -1,0 +1,96 @@
+/* ==========================================================================
+   LOCATION MAP — CSS
+   Two layers:
+
+   [A] EMBED LAYER   → copy into a Webflow Embed / custom <style>. Things
+                       Webflow can't reach: the dynamically-created marker,
+                       Mapbox internals, the map container shell.
+
+   [B] PLAYGROUND PREVIEW ONLY → rough page styling so the standalone page is
+                       usable. DO NOT copy to Webflow.
+   ========================================================================== */
+
+/* ==========================================================================
+   [A] EMBED LAYER — copy to Webflow
+   ========================================================================== */
+
+/* — Map container — */
+.location-map_wrapper {
+  position: relative;
+  width: 100%;
+  height: min(78vh, 680px);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.location-map_map {
+  position: absolute;
+  inset: 0;
+}
+
+/* — Image marker (circular logo face) — */
+.lm-marker {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 3px solid #4cba9f;
+  overflow: hidden;
+  background: #000623;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+.lm-marker img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 6px;
+}
+
+/* — Plain pin marker (no logo) — */
+.lm-pin {
+  width: 22px;
+  height: 22px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  background: #4cba9f;
+  border: 3px solid #000623;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+/* — Mapbox overrides — */
+.mapboxgl-canvas {
+  border-radius: 16px;
+}
+.mapboxgl-ctrl-attrib,
+.mapboxgl-ctrl-logo {
+  display: none !important;
+}
+
+/* ==========================================================================
+   [B] PLAYGROUND PREVIEW ONLY — do NOT copy to Webflow
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+body {
+  font-family: system-ui, sans-serif;
+  background: #000623;
+  color: #f0efea;
+  -webkit-font-smoothing: antialiased;
+}
+img {
+  display: block;
+  max-width: 100%;
+}
+.padding-global {
+  padding: 32px 24px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+h1 {
+  font-size: 1.6rem;
+  margin-bottom: 24px;
+}
