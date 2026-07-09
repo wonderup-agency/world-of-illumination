@@ -6,9 +6,20 @@
 │   ├── components.js              Component registry (auto-managed by create-component)
 │   ├── config.js                  Shared project config (API keys, endpoints, flags)
 │   ├── components/
-│   │   └── global.js              Runs on every page before components load
+│   │   ├── global.js              Runs on every page before components load
+│   │   ├── elastic-pulse-button.js Bouncy squash-&-stretch hover effect on buttons (GSAP)
+│   │   ├── horizontal-scroll.js   Osmo-style horizontal scroll + curtain pin effect
+│   │   └── horizontal-scroll.css  Structural CSS for the horizontal-scroll component
 │   └── pages/
 │       └── .gitkeep               Per-page standalone bundles go here
+│
+├── structure/                     Clean reference markup per component (Webflow DOM)
+│   └── horizontal-scroll.html     Reference markup for the horizontal-scroll section
+│
+├── playground/                    Standalone CDN test harnesses (open directly in browser)
+│   ├── index.html                 horizontal-scroll demo (GSAP via CDN, no build)
+│   ├── events-map/                tabs-map demo (Mapbox via CDN)
+│   └── location-map/              location-map demo (Mapbox via CDN)
 │
 ├── dist/                          Build output (committed to git, cleaned by prod build)
 │   ├── main.js                    Bundled entry point
@@ -65,3 +76,5 @@
 | Component docs         | `.claude/rules/components/<name>.md`                          |
 | Page docs              | `.claude/rules/pages/<name>.md`                               |
 | Architecture docs      | `.claude/rules/`                                              |
+| Reference markup       | `structure/<name>.html` (clean Webflow DOM per component)     |
+| Standalone test harness| `playground/<name>.html` (GSAP via CDN, open in browser)      |
