@@ -9,6 +9,10 @@ import { gsap } from 'gsap'
 const HOVER_LOCK = 500
 // Horizontal stretch as a fraction of the target's font size
 const STRETCH_RATIO = 0.75
+// Background color applied on hover
+const HOVER_BG = '#3fecc2'
+// Background color fade duration (s)
+const BG_DURATION = 0.3
 
 /**
  * @param {HTMLElement[]} elements - All elements matching [data-component='elastic-pulse-button']
@@ -31,10 +35,20 @@ export default function (elements) {
 
         buttons.forEach((btn) => {
           const target = btn.querySelector('[data-elastic-pulse-target]') || btn
+          const originalBg = getComputedStyle(target).backgroundColor
           let hoverLocked = false
           let tl
+          let bgTween
 
           const onEnter = () => {
+            // Background color follows hover state — not gated by the pulse lock
+            bgTween?.kill()
+            bgTween = gsap.to(target, {
+              backgroundColor: HOVER_BG,
+              duration: BG_DURATION,
+              ease: 'power1.out',
+            })
+
             if (hoverLocked) return
             hoverLocked = true
             setTimeout(() => {
@@ -65,11 +79,23 @@ export default function (elements) {
               })
           }
 
+          const onLeave = () => {
+            bgTween?.kill()
+            bgTween = gsap.to(target, {
+              backgroundColor: originalBg,
+              duration: BG_DURATION,
+              ease: 'power1.out',
+            })
+          }
+
           btn.addEventListener('mouseenter', onEnter)
+          btn.addEventListener('mouseleave', onLeave)
           cleanups.push(() => {
             btn.removeEventListener('mouseenter', onEnter)
+            btn.removeEventListener('mouseleave', onLeave)
             tl?.kill()
-            gsap.set(target, { clearProps: 'transform' })
+            bgTween?.kill()
+            gsap.set(target, { clearProps: 'transform,backgroundColor' })
           })
         })
       })

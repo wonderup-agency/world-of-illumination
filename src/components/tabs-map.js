@@ -13,12 +13,10 @@ is NOT bundled here. See .claude/rules/components/tabs-map.md.
 */
 
 import '../styles/tabs-map.css'
+import config from '../config.js'
 
-// ⚠️ Mapbox public token — restrict it to the site's domains in your Mapbox
-// account (Access Tokens → URL restrictions).
-const MAPBOX_TOKEN =
-  'pk.eyJ1IjoicGFibG9yb25kaW5hIiwiYSI6ImNtcjU2ZW5kdzBpenAyenE0a2RiMm1rc2kifQ.qxiMABe0NTNZgaCTfrW1yg'
-const MAPBOX_STYLE = 'mapbox://styles/mapbox/dark-v11'
+const MAPBOX_TOKEN = config.mapboxToken
+const MAPBOX_STYLE = config.mapboxStyle
 
 // Turn a visible state label into a stable key ("Tennesse" → "tennesse").
 const slug = (s) =>
