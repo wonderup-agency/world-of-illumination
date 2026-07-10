@@ -5,7 +5,9 @@ Webflow attribute: data-component="marquee"
 
 import '../styles/marquee.css'
 
-const SPEED = 60 // pixels per second
+const DEFAULT_SPEED = 60 // pixels per second, used when data-marquee-speed is absent
+const SPEED_ATTR = 'data-marquee-speed'
+const REVERSE_ATTR = 'data-marquee-reverse'
 
 /**
  * @param {HTMLElement[]} elements - All elements matching [data-component='marquee']
@@ -16,6 +18,11 @@ export default function (elements) {
   elements.forEach((el) => {
     const track = el.querySelector('.marquee_track')
     if (!track) return
+
+    const speed = parseFloat(el.getAttribute(SPEED_ATTR)) || DEFAULT_SPEED
+    if (el.hasAttribute(REVERSE_ATTR)) {
+      track.style.animationDirection = 'reverse'
+    }
 
     const baseItems = Array.from(track.children).map((item) =>
       item.cloneNode(true)
@@ -38,7 +45,7 @@ export default function (elements) {
 
       // Keep scroll speed constant regardless of how much content got filled in
       const setWidth = track.scrollWidth / 2
-      track.style.animationDuration = `${setWidth / SPEED}s`
+      track.style.animationDuration = `${setWidth / speed}s`
     }
 
     fill()
