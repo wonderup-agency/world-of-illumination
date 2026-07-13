@@ -1,0 +1,16 @@
+# Normalize line endings to LF for everyone (Windows, Mac, Linux) so
+# cross-platform contributors never see false "modified" files caused by
+# CRLF/LF differences.
+* text=auto eol=lf
+
+# Explicit binary types — never touch line endings in these
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.eot binary
