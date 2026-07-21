@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Playground — Guests parallax · Scroll (waterfall style)</title>
+
+    <!-- GSAP + ScrollTrigger via CDN (same as Webflow global setup) -->
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+    <!-- Lenis smooth scroll — the key to the "buttery" reference feel -->
+    <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Josefin+Sans:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --blue-900: #060a2a;
+        --blue-950: #03061c;
+        --white: #f0efea;
+        --pink: #e5147f;
+        --teal: #4cba9f;
+        --panel: rgba(20, 26, 66, 0.55);
+        --heading: 'Archivo Black', system-ui, sans-serif;
+        --body: 'Josefin Sans', system-ui, sans-serif;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      img {
+        max-width: 100%;
+        display: block;
+      }
+
+      body {
+        font-family: var(--body);
+        background: var(--blue-950);
+        color: var(--white);
+      }
+
+      /* ── Surrounding scroll context ───────────────────────────────────── */
+      .filler {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        text-align: center;
+        font-family: var(--heading);
+        text-transform: uppercase;
+        font-size: clamp(1.5rem, 4vw, 3rem);
+        background: radial-gradient(
+          circle at 50% 30%,
+          #0d1340,
+          var(--blue-950) 70%
+        );
+      }
+      .filler--after {
+        background: #04061a;
+      }
+
+      /* ── Guests section (the parallax host) ───────────────────────────── */
+      /* Taller than the viewport so the whole composition passes through.
+         --len is the "Scroll length" slider. */
+      .guests {
+        position: relative;
+        min-height: var(--len, 200vh);
+        overflow: hidden;
+        background: var(--blue-900);
+      }
+
+      /* Centered copy block — z-index 10. Only the front image (z 11) sits over
+         it, matching the design; every other image passes behind. */
+      .guests__text {
+        position: absolute;
+        top: 44%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 10;
+        width: min(90%, 46rem);
+        text-align: center;
+        pointer-events: none;
+      }
+      .guests__title {
+        font-family: var(--heading);
+        text-transform: uppercase;
+        color: var(--pink);
+        line-height: 0.95;
+        font-size: clamp(2.5rem, 7vw, 6rem);
+      }
+      .guests__sub {
+        font-family: var(--heading);
+        text-transform: uppercase;
+        font-size: clamp(1rem, 2.2vw, 1.75rem);
+        margin-top: 0.5rem;
+      }
+      .guests__cta {
+        display: inline-block;
+        margin-top: 2rem;
+        padding: 1.75rem 2.5rem;
+        border-radius: 1rem;
+        background: var(--panel);
+        backdrop-filter: blur(6px);
+        pointer-events: auto;
+      }
+      .guests__cta p {
+        font-family: var(--heading);
+        text-transform: uppercase;
+        font-size: clamp(1rem, 2vw, 1.5rem);
+      }
+      .guests__btn {
+        display: inline-block;
+        margin-top: 1rem;
+        padding: 0.6rem 1.4rem;
+        border-radius: 999px;
+        background: var(--teal);
+        color: var(--blue-950);
+        font-family: var(--heading);
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.03em;
+      }
+
+      /* Each scattered decorative image. left/top/--w and the inline z-index are
+         "Designer" values — the z-index stacking matches the final design and is
+         NOT changed by scroll. JS only drives the parallax Y (and hover). */
+      .guest {
+        position: absolute;
+        width: var(--w, 14vw);
+        aspect-ratio: var(--r, 3 / 4);
+        border-radius: 0.85rem;
+        overflow: hidden;
+        box-shadow: 0 30px 70px rgba(0, 0, 0, 0.55);
+        background: linear-gradient(135deg, #16265a, #0a1130);
+        will-change: transform;
+      }
+      .guest img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      /* ── Dev controls ─────────────────────────────────────────────────── */
+      .controls {
+        position: fixed;
+        right: 1rem;
+        bottom: 1rem;
+        z-index: 9999;
+        width: 15rem;
+        padding: 1rem;
+        border-radius: 0.75rem;
+        background: rgba(3, 6, 28, 0.9);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(240, 239, 234, 0.15);
+        font-family: var(--body);
+        font-size: 0.8rem;
+      }
+      .controls h3 {
+        font-family: var(--heading);
+        text-transform: uppercase;
+        font-size: 0.7rem;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.75rem;
+        color: var(--teal);
+      }
+      .controls label {
+        margin: 0.5rem 0 0.15rem;
+        display: flex;
+        justify-content: space-between;
+        gap: 0.5rem;
+      }
+      .controls input[type='range'] {
+        width: 100%;
+        accent-color: var(--teal);
+      }
+      .controls .toggle {
+        margin-top: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+      }
+      .controls .hint {
+        margin-top: 0.75rem;
+        opacity: 0.55;
+        font-size: 0.7rem;
+        line-height: 1.35;
+      }
+    </style>
+  </head>
+
+  <body>
+    <section class="filler">Scroll down ↓</section>
+
+    <!-- ════════ GUESTS (parallax component) ════════
+         data-speed per image = parallax intensity (vertical travel). z-index is
+         STATIC and matches the design: only the front-left image (z 11) sits
+         over the text; the kid image (z 5) sits over the family photo (z 3); the
+         small thumb (z 5) sits over the arms-up photo (z 4). Hovering an image
+         scales it up and brings it to the front. No blur. -->
+    <section data-component="guests" class="guests">
+      <div class="guests__text">
+        <h2 class="guests__title">Over 6 Million</h2>
+        <p class="guests__sub">Guests and counting.</p>
+        <div class="guests__cta">
+          <p>Join the tradition.</p>
+          <span class="guests__btn">Get Tickets</span>
+        </div>
+      </div>
+
+      <!-- 1 · top-left couple -->
+      <div
+        class="guest"
+        data-speed="0.16"
+        style="left: 21%; top: 11%; --w: 16vw; --r: 4 / 5; z-index: 4"
+      >
+        <img
+          src="https://picsum.photos/seed/woi-1/480/600"
+          alt=""
+          loading="lazy"
+        />
+      </div>
+      <!-- 2 · top-right family (big) -->
+      <div
+        class="guest"
+        data-speed="0.06"
+        style="left: 56%; top: 3%; --w: 30vw; --r: 4 / 3; z-index: 3"
+      >
+        <img
+          src="https://picsum.photos/seed/woi-2/720/540"
+          alt=""
+          loading="lazy"
+        />
+      </div>
+      <!-- 3 · kid at the window — OVER the family photo -->
+      <div
+        class="guest"
+        data-speed="0.34"
+        style="left: 80%; top: 15%; --w: 15vw; z-index: 5"
+      >
+        <img
+          src="https://picsum.photos/seed/woi-3/440/560"
+          alt=""
+          loading="lazy"
+        />
+      </div>
+      <!-- 4 · left couple (red) — OVER the text -->
+      <div
+        class="guest"
+        data-speed="0.20"
+        style="left: 8%; top: 38%; --w: 16vw; z-index: 11"
+      >
+        <img
+          src="https://picsum.photos/seed/woi-4/460/580"
+          alt=""
+          loading="lazy"
+        />
+      </div>
+      <!-- 5 · right couple in car -->
+      <div
+        class="guest"
+        data-speed="0.12"
+        style="left: 70%; top: 49%; --w: 22vw; --r: 4 / 3; z-index: 4"
+      >
+        <img
+          src="https://picsum.photos/seed/woi-5/620/460"
+          alt=""
+          loading="lazy"
+        />
+      </div>
+      <!-- 6 · girl, arms up -->
+      <div
+        class="guest"
+        data-speed="0.24"
+        style="left: 40%; top: 62%; --w: 17vw; --r: 4 / 3; z-index: 4"
+      >
+        <img
+          src="https://picsum.photos/seed/woi-6/560/420"
+          alt=""
+          loading="lazy"
+        />
+      </div>
+      <!-- 7 · small thumb — OVER the arms-up photo -->
+      <div
+        class="guest"
+        data-speed="0.42"
+        style="left: 45%; top: 72%; --w: 12vw; --r: 5 / 3; z-index: 5"
+      >
+        <img
+          src="https://picsum.photos/seed/woi-7/500/300"
+          alt=""
+          loading="lazy"
+        />
+      </div>
+      <!-- 8 · bottom-left family (big) -->
+      <div
+        class="guest"
+        data-speed="0.05"
+        style="left: 15%; top: 71%; --w: 30vw; --r: 4 / 3; z-index: 3"
+      >
+        <img
+          src="https://picsum.photos/seed/woi-8/720/540"
+          alt=""
+          loading="lazy"
+        />
+      </div>
+    </section>
+
+    <section class="filler filler--after">Keep scrolling ↓</section>
+
+    <!-- ════════ Dev controls ════════ -->
+    <aside class="controls">
+      <h3>Parallax · scroll</h3>
+      <label>Scroll length <span data-out="scrollLen">200</span>vh</label>
+      <input
+        type="range"
+        id="scrollLen"
+        min="120"
+        max="400"
+        step="10"
+        value="200"
+      />
+      <label>Y travel <span data-out="yTravel">760</span>px</label>
+      <input type="range" id="yTravel" min="0" max="1600" value="760" />
+      <label>Scrub <span data-out="scrub">0.6</span>s</label>
+      <input type="range" id="scrub" min="0" max="2.5" step="0.1" value="0.6" />
+      <label>Smoothness <span data-out="lerp">0.08</span></label>
+      <input
+        type="range"
+        id="lerp"
+        min="0.03"
+        max="0.2"
+        step="0.01"
+        value="0.08"
+      />
+      <label class="toggle">
+        <input type="checkbox" id="markers" /> ScrollTrigger markers
+      </label>
+      <p class="hint">
+        Hover an image to bring it forward. Desktop ≥992px only.
+      </p>
+    </aside>
+
+    <!-- ════════ SCRIPT (this is what ports to the guests component) ════════ -->
+    <script>
+      ;(function () {
+        'use strict'
+
+        const { gsap, ScrollTrigger, Lenis } = window
+        gsap.registerPlugin(ScrollTrigger)
+
+        const SECTION_SELECTOR = "[data-component='guests']"
+        const ITEM_SELECTOR = '[data-speed]'
+        const Z_HOVER = 60 // hovered image jumps to the front
+        const prefersReduced = window.matchMedia(
+          '(prefers-reduced-motion: reduce)'
+        ).matches
+
+        // Live-tunable params (driven by the sliders)
+        const params = {
+          scrollLen: 200, // section height in vh — total scroll distance
+          yTravel: 760, // px of travel for a speed=1 layer (scaled per data-speed)
+          scrub: 0.6, // seconds of scrub catch-up
+          lerp: 0.08, // Lenis interpolation — lower = smoother/slower
+          markers: false,
+        }
+
+        const section = document.querySelector(SECTION_SELECTOR)
+        section.style.setProperty('--len', params.scrollLen + 'vh')
+
+        const lerpVal = gsap.utils.interpolate
+
+        let active = false
+        let driver = null
+        let layers = []
+
+        // ── Lenis smooth scroll (skipped under reduced-motion) ──
+        let lenis = null
+        if (Lenis && !prefersReduced) {
+          lenis = new Lenis({ lerp: params.lerp, smoothWheel: true })
+          lenis.on('scroll', ScrollTrigger.update)
+          gsap.ticker.add((time) => lenis.raf(time * 1000))
+          gsap.ticker.lagSmoothing(0)
+        }
+
+        // Read the DOM, cache per layer: travel (from data-speed), its design
+        // z-index (kept static), and a quickSetter for the parallax Y.
+        function readLayers() {
+          const nodes = gsap.utils.toArray(ITEM_SELECTOR, section)
+          return nodes.map((el) => ({
+            el,
+            travel: (parseFloat(el.dataset.speed) || 0.2) * params.yTravel,
+            baseZ: el.style.zIndex,
+            setY: gsap.quickSetter(el, 'y', 'px'),
+          }))
+        }
+
+        // p is the scrub-smoothed progress (0 → 1). Pure vertical parallax —
+        // each layer drifts up at its own rate. No blur/opacity/z changes.
+        function render(p) {
+          layers.forEach((l) => l.setY(lerpVal(l.travel, -l.travel, p)))
+        }
+
+        // Hover brings an image forward and scales it up slightly.
+        function bindHover() {
+          layers.forEach((l) => {
+            l.el.addEventListener('mouseenter', () => {
+              l.el.style.zIndex = Z_HOVER
+              gsap.to(l.el, { scale: 1.05, duration: 0.4, ease: 'power2.out' })
+            })
+            l.el.addEventListener('mouseleave', () => {
+              gsap.to(l.el, {
+                scale: 1,
+                duration: 0.4,
+                ease: 'power2.out',
+                onComplete: () => (l.el.style.zIndex = l.baseZ),
+              })
+            })
+          })
+        }
+
+        function build() {
+          layers = readLayers()
+          bindHover()
+          const proxy = { p: 0 }
+          driver = gsap.to(proxy, {
+            p: 1,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: section,
+              start: 'top bottom',
+              end: 'bottom top',
+              scrub: params.scrub,
+              markers: params.markers,
+              invalidateOnRefresh: true,
+            },
+            onUpdate: () => render(proxy.p),
+          })
+          render(0)
+        }
+
+        function destroy() {
+          if (driver) {
+            driver.scrollTrigger && driver.scrollTrigger.kill()
+            driver.kill()
+            driver = null
+          }
+          layers.forEach((l) => {
+            gsap.killTweensOf(l.el)
+            gsap.set(l.el, { clearProps: 'transform' })
+            l.el.style.zIndex = l.baseZ
+          })
+          layers = []
+        }
+
+        function rebuild() {
+          if (!active) return
+          destroy()
+          build()
+          ScrollTrigger.refresh()
+        }
+
+        // Gate the parallax on desktop + prefers-reduced-motion.
+        const mm = gsap.matchMedia()
+        mm.add(
+          {
+            isDesktop: '(min-width: 992px)',
+            reduce: '(prefers-reduced-motion: reduce)',
+          },
+          (ctx) => {
+            const { isDesktop, reduce } = ctx.conditions
+            if (!isDesktop || reduce) {
+              active = false
+              return
+            }
+            active = true
+            build()
+            return () => {
+              active = false
+              destroy()
+            }
+          }
+        )
+
+        // ── Sliders ──
+        const out = (id) => document.querySelector(`[data-out="${id}"]`)
+        ;['yTravel', 'scrub'].forEach((id) => {
+          const input = document.getElementById(id)
+          input.addEventListener('input', () => {
+            params[id] = +input.value
+            if (out(id)) out(id).textContent = input.value
+            rebuild()
+          })
+        })
+        const scrollLen = document.getElementById('scrollLen')
+        scrollLen.addEventListener('input', () => {
+          params.scrollLen = +scrollLen.value
+          if (out('scrollLen')) out('scrollLen').textContent = scrollLen.value
+          section.style.setProperty('--len', params.scrollLen + 'vh')
+          rebuild()
+        })
+        const lerp = document.getElementById('lerp')
+        lerp.addEventListener('input', () => {
+          params.lerp = +lerp.value
+          if (out('lerp')) out('lerp').textContent = lerp.value
+          if (lenis) lenis.options.lerp = params.lerp
+        })
+        const markers = document.getElementById('markers')
+        markers.addEventListener('change', () => {
+          params.markers = markers.checked
+          rebuild()
+        })
+
+        window.addEventListener('load', () => ScrollTrigger.refresh())
+      })()
+    </script>
+  </body>
+</html>

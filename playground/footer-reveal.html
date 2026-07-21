@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Playground — Footer reveal (Scout-style)</title>
+
+    <!-- GSAP + ScrollTrigger via CDN (Webflow provides these globally on the site) -->
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+    <!-- Lenis smooth scroll (bundled site-wide in global.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Josefin+Sans:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --blue-900: #060a2a;
+        --blue-950: #03061c;
+        --white: #f0efea;
+        --pink: #e5147f;
+        --teal: #4cba9f;
+        --heading: 'Archivo Black', system-ui, sans-serif;
+        --body: 'Josefin Sans', system-ui, sans-serif;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      img {
+        max-width: 100%;
+        display: block;
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      body {
+        font-family: var(--body);
+        background: var(--blue-950);
+        color: var(--white);
+      }
+
+      /* ── Page content above the footer ────────────────────────────────── */
+      .filler {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        text-align: center;
+        font-family: var(--heading);
+        text-transform: uppercase;
+        font-size: clamp(1.5rem, 4vw, 3rem);
+        background: radial-gradient(
+          circle at 50% 30%,
+          #0d1340,
+          var(--blue-950) 70%
+        );
+      }
+
+      /* ── Footer reveal stage (pinned) ─────────────────────────────────── */
+      .footer {
+        position: relative;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      /* Image: sits behind, full-screen. INITIAL position = fills the viewport. */
+      .footer__image {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        overflow: hidden;
+      }
+      .footer__image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        will-change: transform;
+      }
+
+      /* Panel: the footer content. Starts below the fold and rises OVER the
+         image, stopping so a band of image stays at the top (FINAL position). */
+      .footer__panel {
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        min-height: 100vh;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        background: var(--blue-900);
+        will-change: transform;
+      }
+      .footer__legal {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem 2.5rem;
+        align-items: center;
+        padding: 1.1rem 5vw;
+        font-size: 0.72rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        border-bottom: 1px solid rgba(240, 239, 234, 0.12);
+        opacity: 0.85;
+      }
+      .footer__legal .spacer {
+        margin-left: auto;
+      }
+      .footer__body {
+        flex: 1 1 auto;
+        display: grid;
+        grid-template-columns: 1.4fr 1fr 1fr 1fr;
+        gap: 2rem;
+        padding: 4rem 5vw;
+      }
+      .footer__brand {
+        font-family: var(--heading);
+        text-transform: uppercase;
+        font-size: 2rem;
+        line-height: 1.05;
+      }
+      .footer__brand .pink {
+        color: var(--pink);
+      }
+      .footer__col h4 {
+        font-family: var(--heading);
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 0.05em;
+        color: var(--teal);
+        margin-bottom: 1rem;
+      }
+      .footer__col a {
+        display: block;
+        opacity: 0.8;
+        margin-bottom: 0.6rem;
+        font-size: 0.95rem;
+      }
+      .footer__col a:hover {
+        opacity: 1;
+      }
+
+      /* ── Dev controls ─────────────────────────────────────────────────── */
+      .controls {
+        position: fixed;
+        right: 1rem;
+        bottom: 1rem;
+        z-index: 9999;
+        width: 15rem;
+        padding: 1rem;
+        border-radius: 0.75rem;
+        background: rgba(3, 6, 28, 0.9);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(240, 239, 234, 0.15);
+        font-family: var(--body);
+        font-size: 0.8rem;
+      }
+      .controls h3 {
+        font-family: var(--heading);
+        text-transform: uppercase;
+        font-size: 0.7rem;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.75rem;
+        color: var(--teal);
+      }
+      .controls label {
+        margin: 0.5rem 0 0.15rem;
+        display: flex;
+        justify-content: space-between;
+        gap: 0.5rem;
+      }
+      .controls input[type='range'] {
+        width: 100%;
+        accent-color: var(--teal);
+      }
+      .controls .toggle {
+        margin-top: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+      }
+      .controls .hint {
+        margin-top: 0.75rem;
+        opacity: 0.55;
+        font-size: 0.7rem;
+        line-height: 1.35;
+      }
+    </style>
+  </head>
+
+  <body>
+    <section class="filler">Scroll down ↓</section>
+    <section class="filler">Keep scrolling ↓</section>
+
+    <!-- ════════ FOOTER REVEAL ════════
+         Stage pins. The image stays full-screen behind (INITIAL). The panel
+         rises from below OVER the image and stops, leaving a band of image at
+         the top (FINAL). -->
+    <footer data-component="footer-reveal" class="footer">
+      <div class="footer__image">
+        <img
+          data-footer-image
+          src="https://picsum.photos/seed/woi-footer/1600/1000"
+          alt=""
+        />
+      </div>
+
+      <div data-footer-panel class="footer__panel">
+        <div class="footer__legal">
+          <span>© 2026 World of Illumination</span>
+          <a href="#">Privacy</a>
+          <a href="#">Terms of use</a>
+          <a href="#" class="spacer">Cookies</a>
+          <a href="#">Legal</a>
+        </div>
+        <div class="footer__body">
+          <div class="footer__brand">
+            World of <span class="pink">Illumination</span>
+          </div>
+          <div class="footer__col">
+            <h4>Tickets</h4>
+            <a href="#">Find a show</a>
+            <a href="#">Group events</a>
+            <a href="#">Gift cards</a>
+          </div>
+          <div class="footer__col">
+            <h4>Locations</h4>
+            <a href="#">Arizona</a>
+            <a href="#">Texas</a>
+            <a href="#">Utah</a>
+          </div>
+          <div class="footer__col">
+            <h4>Company</h4>
+            <a href="#">About us</a>
+            <a href="#">Charity</a>
+            <a href="#">FAQ</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- ════════ Dev controls ════════ -->
+    <aside class="controls">
+      <h3>Footer reveal</h3>
+      <label>Pin length <span data-out="pinLength">1</span>×vh</label>
+      <input
+        type="range"
+        id="pinLength"
+        min="0.4"
+        max="2.5"
+        step="0.1"
+        value="1"
+      />
+      <label>Image band (final) <span data-out="band">18</span>vh</label>
+      <input type="range" id="band" min="0" max="60" step="2" value="18" />
+      <label>Image zoom <span data-out="zoom">1.12</span></label>
+      <input
+        type="range"
+        id="zoom"
+        min="1"
+        max="1.4"
+        step="0.02"
+        value="1.12"
+      />
+      <label>Scrub <span data-out="scrub">0.6</span>s</label>
+      <input type="range" id="scrub" min="0" max="2.5" step="0.1" value="0.6" />
+      <label>Smoothness <span data-out="lerp">0.08</span></label>
+      <input
+        type="range"
+        id="lerp"
+        min="0.03"
+        max="0.2"
+        step="0.01"
+        value="0.08"
+      />
+      <label class="toggle">
+        <input type="checkbox" id="markers" /> ScrollTrigger markers
+      </label>
+      <p class="hint">
+        Initial: image full-screen. Final: panel up, image band on top.
+      </p>
+    </aside>
+
+    <!-- ════════ SCRIPT (this is what ports to the footer-reveal component) ════════ -->
+    <script>
+      ;(function () {
+        'use strict'
+
+        const { gsap, ScrollTrigger, Lenis } = window
+        gsap.registerPlugin(ScrollTrigger)
+        const prefersReduced = window.matchMedia(
+          '(prefers-reduced-motion: reduce)'
+        ).matches
+
+        const params = {
+          pinLength: 1, // viewport heights the stage is pinned for
+          band: 18, // vh of image left visible at the top (final position)
+          zoom: 1.12, // image starts zoomed in, settles to 1 as it's revealed
+          scrub: 0.6,
+          lerp: 0.08,
+          markers: false,
+        }
+
+        const stage = document.querySelector("[data-component='footer-reveal']")
+        const image = stage.querySelector('[data-footer-image]')
+        const panel = stage.querySelector('[data-footer-panel]')
+
+        // ── Lenis smooth scroll ──
+        let lenis = null
+        if (Lenis && !prefersReduced) {
+          lenis = new Lenis({ lerp: params.lerp, smoothWheel: true })
+          lenis.on('scroll', ScrollTrigger.update)
+          gsap.ticker.add((time) => lenis.raf(time * 1000))
+          gsap.ticker.lagSmoothing(0)
+        }
+
+        let tl = null
+        function build() {
+          // Panel final position: translated down by `band` vh from the top,
+          // so `band` vh of the image stays visible above it.
+          const bandPct = () =>
+            (params.band / 100) *
+            (window.innerHeight / panel.offsetHeight) *
+            100
+
+          tl = gsap.timeline({
+            defaults: { ease: 'none' },
+            scrollTrigger: {
+              trigger: stage,
+              start: 'top top',
+              end: () => '+=' + window.innerHeight * params.pinLength,
+              pin: true,
+              scrub: params.scrub,
+              markers: params.markers,
+              invalidateOnRefresh: true,
+            },
+          })
+          // Panel rises from fully below (100%) to leave the image band.
+          tl.fromTo(panel, { yPercent: 100 }, { yPercent: bandPct() }, 0)
+          // Image eases out of its zoom as it gets revealed.
+          tl.fromTo(image, { scale: params.zoom }, { scale: 1 }, 0)
+        }
+        function destroy() {
+          if (tl) {
+            tl.scrollTrigger && tl.scrollTrigger.kill()
+            tl.kill()
+            tl = null
+          }
+          gsap.set([panel, image], { clearProps: 'transform' })
+        }
+        function rebuild() {
+          if (prefersReduced) return
+          destroy()
+          build()
+          ScrollTrigger.refresh()
+        }
+
+        const mm = gsap.matchMedia()
+        mm.add('(prefers-reduced-motion: no-preference)', () => {
+          build()
+          return () => destroy()
+        })
+
+        // ── Sliders ──
+        const out = (id) => document.querySelector(`[data-out="${id}"]`)
+        ;['pinLength', 'band', 'zoom', 'scrub'].forEach((id) => {
+          const input = document.getElementById(id)
+          input.addEventListener('input', () => {
+            params[id] = +input.value
+            if (out(id)) out(id).textContent = input.value
+            rebuild()
+          })
+        })
+        const lerp = document.getElementById('lerp')
+        lerp.addEventListener('input', () => {
+          params.lerp = +lerp.value
+          if (out('lerp')) out('lerp').textContent = lerp.value
+          if (lenis) lenis.options.lerp = params.lerp
+        })
+        const markers = document.getElementById('markers')
+        markers.addEventListener('change', () => {
+          params.markers = markers.checked
+          rebuild()
+        })
+
+        window.addEventListener('load', () => ScrollTrigger.refresh())
+      })()
+    </script>
+  </body>
+</html>

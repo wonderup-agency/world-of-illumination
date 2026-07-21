@@ -1,0 +1,29 @@
+/* footer reveal — pure-CSS sticky reveal (no ScrollTrigger pin, so it never
+   fights Lenis). The image sticks full-screen while the footer content scrolls
+   up over it. Gated by .is-reveal (added by footer.js) so the static footer is
+   untouched without JS / under reduced-motion. */
+
+.footer_section.is-reveal {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Image: visually first (order -1), sticks full-screen behind the content. */
+.footer_section.is-reveal .footer_image-wrapper {
+  order: -1;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  z-index: 0;
+}
+.footer_section.is-reveal .footer_image {
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Content rises over the sticky image as the page scrolls. */
+.footer_section.is-reveal .footer_component {
+  position: relative;
+  z-index: 1;
+}

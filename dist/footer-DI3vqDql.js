@@ -1,0 +1,1 @@
+function e(e){window.matchMedia("(prefers-reduced-motion: reduce)").matches||e.forEach(e=>{const o=e.querySelector(".footer_image-wrapper"),r=e.querySelector(".footer_component");o&&r&&e.classList.add("is-reveal")})}export{e as default};

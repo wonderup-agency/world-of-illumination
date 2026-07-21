@@ -14,8 +14,8 @@
 
 export default [
   {
-    selector: "[data-component='elastic-pulse-button']",
-    importFn: () => import('./components/elastic-pulse-button.js'),
+    selector: "[data-component='footer']",
+    importFn: () => import('./components/footer.js'),
   },
   {
     selector: "[data-component='location-map']",
