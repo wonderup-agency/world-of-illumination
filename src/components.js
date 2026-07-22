@@ -14,6 +14,10 @@
 
 export default [
   {
+    selector: "[data-component='nested-dropdown-fix']",
+    importFn: () => import('./components/nested-dropdown-fix.js'),
+  },
+  {
     selector: "[data-component='theme-image-slider']",
     importFn: () => import('./components/theme-image-slider.js'),
   },
