@@ -14,6 +14,10 @@
 
 export default [
   {
+    selector: "[data-component='theme-image-slider']",
+    importFn: () => import('./components/theme-image-slider.js'),
+  },
+  {
     selector: "[data-component='footer']",
     importFn: () => import('./components/footer.js'),
   },

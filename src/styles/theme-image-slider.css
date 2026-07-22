@@ -1,0 +1,12 @@
+[data-component='theme-image-slider'] {
+  position: relative;
+  overflow: hidden;
+}
+
+[data-component='theme-image-slider'] .themes_image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
