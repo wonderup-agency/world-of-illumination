@@ -26,7 +26,9 @@ const SECTION_SPACER = 130
  * the anchor offset fix still applies.
  */
 export default function () {
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const reducedMotion = window.matchMedia(
+    '(prefers-reduced-motion: reduce)'
+  ).matches
 
   setupAnchorScroll(reducedMotion)
 
