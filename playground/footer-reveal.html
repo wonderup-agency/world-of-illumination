@@ -75,12 +75,14 @@
         overflow: hidden;
       }
 
-      /* Image: sits behind, full-screen. INITIAL position = fills the viewport. */
+      /* Image: the moving layer, in FRONT. Starts below the fold and rises OVER
+         the panel, stopping so a band of panel stays at the top (FINAL). */
       .footer__image {
         position: absolute;
         inset: 0;
-        z-index: 0;
+        z-index: 1;
         overflow: hidden;
+        will-change: transform;
       }
       .footer__image img {
         width: 100%;
@@ -89,19 +91,19 @@
         will-change: transform;
       }
 
-      /* Panel: the footer content. Starts below the fold and rises OVER the
-         image, stopping so a band of image stays at the top (FINAL position). */
+      /* Panel: the footer content, static full-screen BEHIND the image.
+         INITIAL = fills the viewport; a band of it stays visible at the top
+         once the image has risen over it (FINAL). */
       .footer__panel {
         position: absolute;
         left: 0;
         bottom: 0;
         width: 100%;
         min-height: 100vh;
-        z-index: 1;
+        z-index: 0;
         display: flex;
         flex-direction: column;
         background: var(--blue-900);
-        will-change: transform;
       }
       .footer__legal {
         display: flex;
@@ -205,9 +207,9 @@
     <section class="filler">Keep scrolling ↓</section>
 
     <!-- ════════ FOOTER REVEAL ════════
-         Stage pins. The image stays full-screen behind (INITIAL). The panel
-         rises from below OVER the image and stops, leaving a band of image at
-         the top (FINAL). -->
+         Stage pins. The panel (footer content) stays full-screen behind
+         (INITIAL). The image rises from below OVER the panel and stops,
+         leaving a band of panel at the top (FINAL). -->
     <footer data-component="footer-reveal" class="footer">
       <div class="footer__image">
         <img
@@ -263,7 +265,7 @@
         step="0.1"
         value="1"
       />
-      <label>Image band (final) <span data-out="band">18</span>vh</label>
+      <label>Panel band (final) <span data-out="band">18</span>vh</label>
       <input type="range" id="band" min="0" max="60" step="2" value="18" />
       <label>Image zoom <span data-out="zoom">1.12</span></label>
       <input
@@ -289,7 +291,7 @@
         <input type="checkbox" id="markers" /> ScrollTrigger markers
       </label>
       <p class="hint">
-        Initial: image full-screen. Final: panel up, image band on top.
+        Initial: panel full-screen. Final: image up over it, panel band on top.
       </p>
     </aside>
 
@@ -306,8 +308,8 @@
 
         const params = {
           pinLength: 1, // viewport heights the stage is pinned for
-          band: 18, // vh of image left visible at the top (final position)
-          zoom: 1.12, // image starts zoomed in, settles to 1 as it's revealed
+          band: 18, // vh of panel left visible at the top (final position)
+          zoom: 1.12, // image starts zoomed in, settles to 1 as it rises
           scrub: 0.6,
           lerp: 0.08,
           markers: false,
@@ -328,13 +330,6 @@
 
         let tl = null
         function build() {
-          // Panel final position: translated down by `band` vh from the top,
-          // so `band` vh of the image stays visible above it.
-          const bandPct = () =>
-            (params.band / 100) *
-            (window.innerHeight / panel.offsetHeight) *
-            100
-
           tl = gsap.timeline({
             defaults: { ease: 'none' },
             scrollTrigger: {
@@ -347,10 +342,16 @@
               invalidateOnRefresh: true,
             },
           })
-          // Panel rises from fully below (100%) to leave the image band.
-          tl.fromTo(panel, { yPercent: 100 }, { yPercent: bandPct() }, 0)
-          // Image eases out of its zoom as it gets revealed.
-          tl.fromTo(image, { scale: params.zoom }, { scale: 1 }, 0)
+          // Image rises from fully below (100%) to leave a `band` vh strip of
+          // panel visible at the top. The image layer is exactly 100vh tall, so
+          // a yPercent equal to `band` leaves that many vh of panel above it.
+          // It also eases out of its starting zoom as it rises.
+          tl.fromTo(
+            image,
+            { yPercent: 100, scale: params.zoom },
+            { yPercent: params.band, scale: 1 },
+            0
+          )
         }
         function destroy() {
           if (tl) {
