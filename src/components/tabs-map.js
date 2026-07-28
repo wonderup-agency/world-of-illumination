@@ -18,6 +18,27 @@ import config from '../config.js'
 const MAPBOX_TOKEN = config.mapboxToken
 const MAPBOX_STYLE = config.mapboxStyle
 
+/*
+Where a custom pin image sits relative to its coordinate. 'bottom' assumes a
+pin/teardrop graphic whose tip should land exactly on the point. Switch to
+'center' if the artwork is a badge or logo meant to be centred on it instead.
+Default logo markers stay centred either way.
+*/
+const CUSTOM_MARKER_ANCHOR = 'bottom'
+
+/*
+Rendered width of a custom pin. Must stay in sync with --em-marker-width in
+tabs-map.css: it's passed as the <img sizes> value so the browser picks the
+smallest srcset variant instead of the 2600px original (Webflow's CMS images
+ship sizes="100vw", which would otherwise download a full-size photo to draw a
+~56px pin). SVG pins have no srcset and ignore this entirely.
+*/
+const CUSTOM_MARKER_WIDTH = '56px'
+
+// Framing used every time the map fits itself to a set of events — initial
+// load, filter change and the reset button all share it so "home" is one view.
+const FIT_OPTIONS = { padding: 60, maxZoom: 9 }
+
 // Turn a visible state label into a stable key ("Tennesse" → "tennesse").
 const slug = (s) =>
   (s || '')
@@ -25,6 +46,31 @@ const slug = (s) =>
     .trim()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
+
+/*
+Optional per-item custom pin: a hidden <img data-map-marker> inside the card
+(kept out of sight with the `hide` class). Returns '' when the CMS image field
+is empty, in which case the card falls back to the default circular logo marker.
+
+Two guards, both needed:
+  - `.w-dyn-bind-empty` — with an empty CMS image field Webflow still renders
+    the <img>, pointing at its own placeholder.svg and flagged with this class.
+    Without the check every unset item would get the Webflow placeholder as its
+    pin. A `/plugins/Basic/assets/placeholder` src is treated the same way, in
+    case the class ever changes.
+  - the src ATTRIBUTE (not img.src) — an <img> with an empty src resolves .src
+    to the page URL, which would read as a valid image and render a broken pin.
+*/
+const markerImage = (scope) => {
+  const none = { src: '', srcset: '' }
+  const el = scope?.querySelector('[data-map-marker]')
+  if (!el) return none
+  const img = el.tagName === 'IMG' ? el : el.querySelector('img')
+  if (!img || img.classList.contains('w-dyn-bind-empty')) return none
+  const src = img.getAttribute('src') || ''
+  if (src.includes('/plugins/Basic/assets/placeholder')) return none
+  return { src, srcset: img.getAttribute('srcset') || '' }
+}
 
 class TabsMap {
   constructor(wrapper) {
@@ -107,6 +153,7 @@ class TabsMap {
         const price = priceWrap
           ? priceWrap.textContent.replace(/\s+/g, ' ').trim()
           : ''
+        const pin = markerImage(card)
         return {
           index,
           element: card,
@@ -116,6 +163,9 @@ class TabsMap {
           state: slug(stateName),
           image: card.querySelector('.location_image')?.src || '',
           logo: card.querySelector('.location_logo')?.src || '',
+          // Optional custom pin image — empty src falls back to the logo marker.
+          marker: pin.src,
+          markerSrcset: pin.srcset,
           date: card.querySelector('.location_date')?.textContent.trim() || '',
           time: card.querySelector('.location_days')?.textContent.trim() || '',
           title:
@@ -213,16 +263,65 @@ class TabsMap {
       const source = this.map.getSource('events')
       if (source) source.setData(this.buildGeoJSON())
       const filtered = this.getFiltered()
-      if (filtered.length)
-        this.map.fitBounds(this.calculateBounds(filtered), {
-          padding: 60,
-          maxZoom: 9,
-        })
+      this.fitToFiltered()
       if (this.currentId && !filtered.some((d) => d.id === this.currentId)) {
         this.currentId = null
         this.mapCard?.classList.remove('is-active')
       }
     }
+  }
+
+  // ── Reset view ────────────────────────────────────────────────────────────
+  /*
+  Frames the map around the events currently in play, i.e. the active state
+  filter rather than the whole dataset — resetting shouldn't silently undo a
+  filter the user picked. Same framing as the initial load, so "home" is one
+  single view no matter how the user got lost.
+  */
+  fitToFiltered() {
+    if (!this.map) return
+    const filtered = this.getFiltered()
+    const data = filtered.length ? filtered : this.data
+    if (!data.length) return
+    this.map.fitBounds(this.calculateBounds(data), FIT_OPTIONS)
+  }
+
+  /*
+  Reset control. Prefers a button designed in Webflow — add
+  data-tabs-map="reset" to any element inside the component and it gets wired up
+  with the site's own styling. Without one, a minimal fallback button is
+  injected into the map container (styled by .em-reset in tabs-map.css) so the
+  escape hatch exists on every map with no Designer work required.
+  */
+  setupResetButton() {
+    this.resetButton = this.wrapper.querySelector('[data-tabs-map="reset"]')
+
+    if (!this.resetButton) {
+      const el = document.createElement('button')
+      el.className = 'em-reset'
+      el.type = 'button'
+      el.textContent = 'Reset view'
+      this.mapContainer.appendChild(el)
+      this.resetButton = el
+    }
+
+    this.resetButton.setAttribute('aria-label', 'Reset map view')
+    this.resetButton.addEventListener('click', (e) => {
+      e.preventDefault() // harmless on a <button>, needed if Webflow uses an <a>
+      this.resetView()
+    })
+  }
+
+  // Back to the default view + drop the current selection (the floating card
+  // would otherwise keep pointing at a marker that's no longer centred).
+  resetView() {
+    if (!this.map) return
+    this.currentId = null
+    this.mapCard?.classList.remove('is-active')
+    for (const key in this.markersOnScreen) {
+      this.markersOnScreen[key].getElement().classList.remove('is-active')
+    }
+    this.fitToFiltered()
   }
 
   // ── Map ─────────────────────────────────────────────────────────────────────
@@ -239,13 +338,14 @@ class TabsMap {
       container: this.mapContainer,
       style: MAPBOX_STYLE,
       bounds: this.calculateBounds(this.data),
-      fitBoundsOptions: { padding: 60, maxZoom: 9 },
+      fitBoundsOptions: FIT_OPTIONS,
       minZoom: 3,
     })
     this.map.addControl(
       new mapboxgl.NavigationControl({ showCompass: false }),
       'top-right'
     )
+    this.setupResetButton()
 
     this.map.on('load', () => {
       this.addSourceAndLayers()
@@ -261,7 +361,14 @@ class TabsMap {
       type: 'FeatureCollection',
       features: this.getFiltered().map((d) => ({
         type: 'Feature',
-        properties: { id: d.id, state: d.state, title: d.title, logo: d.logo },
+        properties: {
+          id: d.id,
+          state: d.state,
+          title: d.title,
+          logo: d.logo,
+          marker: d.marker,
+          markerSrcset: d.markerSrcset,
+        },
         geometry: { type: 'Point', coordinates: [d.lng, d.lat] },
       })),
     }
@@ -319,6 +426,7 @@ class TabsMap {
           })
           this.markerCache[key] = new mapboxgl.Marker({
             element: el,
+            anchor: props.marker ? CUSTOM_MARKER_ANCHOR : 'center',
           }).setLngLat(coords)
         }
         this.markerCache[key]
@@ -342,10 +450,19 @@ class TabsMap {
     el.className = 'em-marker'
     el.type = 'button'
     el.setAttribute('aria-label', props.title || 'Event')
-    if (props.logo) {
+
+    // Custom pin: the CMS image IS the marker — no circular frame, no crop, and
+    // it keeps its own aspect ratio (see .em-marker.is-custom in tabs-map.css).
+    const src = props.marker || props.logo
+    if (props.marker) el.classList.add('is-custom')
+    if (src) {
       const img = document.createElement('img')
-      img.src = props.logo
+      img.src = src
       img.alt = ''
+      if (props.marker && props.markerSrcset) {
+        img.srcset = props.markerSrcset
+        img.sizes = CUSTOM_MARKER_WIDTH
+      }
       el.appendChild(img)
     }
     return el

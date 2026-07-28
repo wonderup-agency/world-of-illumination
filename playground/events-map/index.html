@@ -263,6 +263,15 @@
                                 </div>
                               </div>
                             </div>
+                            <!-- Custom map pin (CMS image field, hidden card-side).
+                                 Present + filled → this image becomes the marker. -->
+                            <img
+                              src="https://cdn.prod.website-files.com/6a205e39ec626f3db3abd22f/6a2b49c1e02ead14fc478c03_Theme%3DCandy.svg"
+                              loading="lazy"
+                              data-map-marker="img"
+                              alt=""
+                              class="hide"
+                            />
                           </div>
                         </div>
                       </div>
@@ -387,6 +396,16 @@
                                 </div>
                               </div>
                             </div>
+                            <!-- Same binding, CMS field EMPTY — Webflow renders its
+                                 own placeholder.svg + .w-dyn-bind-empty. Must fall
+                                 back to the default logo marker, not the placeholder. -->
+                            <img
+                              src="https://cdn.prod.website-files.com/plugins/Basic/assets/placeholder.60f9b1840c.svg"
+                              loading="lazy"
+                              data-map-marker="img"
+                              alt=""
+                              class="hide w-dyn-bind-empty"
+                            />
                           </div>
                         </div>
                       </div>

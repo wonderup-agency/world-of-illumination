@@ -89,6 +89,55 @@
   padding: 6px;
 }
 
+/* — Custom pin (per-item CMS image via data-map-marker) —
+   The artwork IS the marker: no circular frame, no crop, natural aspect ratio.
+   Width is the only fixed dimension; height follows the image. Anchored at its
+   bottom edge in JS (CUSTOM_MARKER_ANCHOR), so it scales up from the tip. */
+.em-marker.is-custom {
+  width: var(--em-marker-width, 56px);
+  height: auto;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  overflow: visible;
+  box-shadow: none;
+  transform-origin: bottom center;
+}
+.em-marker.is-custom img {
+  display: block;
+  width: 100%;
+  height: auto;
+  padding: 0;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.45));
+}
+
+/* — Reset-view button (JS-injected fallback only) —
+   A Webflow-designed [data-tabs-map='reset'] keeps its own styling instead.
+   Bottom-left: top-right is the Mapbox zoom control + the floating card. */
+.em-reset {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  z-index: 5;
+  padding: 8px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 32px;
+  background: #000623;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+.em-reset:hover {
+  background: #4cba9f;
+  color: #000623;
+}
+
 /* — Cluster bubble — */
 .em-cluster {
   display: flex;

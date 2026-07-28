@@ -1,0 +1,927 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Playground — WOI Blog section (HTML + CSS only)</title>
+
+    <!--
+      Fonts: local preview only. On the real site Webflow already serves
+      Neutronic + Josefin Sans, so this <link> is not copied over.
+      Archivo Black stands in for Neutronic here.
+    -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Josefin+Sans:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* ====================================================================
+         WOI — Blog section
+         No JavaScript. No libraries. HTML + CSS only.
+
+         Rules followed: rem units only (no px), BEM naming, class-only
+         selectors (no tag or ID selectors), no descendant selectors, simple
+         selectors only, minimal utility classes, no complex pseudo-selectors.
+         Every element carries its own class, so nothing depends on nesting —
+         that's what makes this safe to paste into Webflow.
+
+         Animation approach (all CSS):
+         · Scroll reveals use `animation-timeline: view()`. Browsers without
+           it fall back to a 0s animation that lands on the final (visible)
+           keyframe — so content is never stuck hidden. No hidden state is
+           ever written in the base CSS, only inside keyframes.
+         · Hover/focus effects are plain transitions on the hovered element
+           itself (never a descendant), so no combinators are needed.
+         · Everything is switched off under prefers-reduced-motion.
+         ==================================================================== */
+
+      /* ── Tokens — mirrors the WOI Webflow Variables ───────────────────── */
+      :root {
+        --blue-900: #000623;
+        --blue-800: #1a1f39;
+        --white: #f0efea;
+        --white-70: rgba(240, 239, 234, 0.7);
+        --white-40: rgba(255, 255, 255, 0.4);
+        --white-12: rgba(255, 255, 255, 0.12);
+        --green: #4cba9f;
+        --yellow: #e3a336;
+        --pink: #be0067;
+        --font-heading: 'Archivo Black', system-ui, sans-serif;
+        --font-body: 'Josefin Sans', system-ui, sans-serif;
+        --radius-lg: 1.5rem;
+        --radius-md: 1rem;
+        --radius-pill: 6.25rem;
+        --ease-woi: cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      /* Playground-only reset — Webflow ships its own. */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      /* ── Utilities (the only two in the file) ─────────────────────────── */
+
+      /* Scroll-in reveal. Falls back to "instantly visible" without view(). */
+      .u-reveal {
+        animation-name: reveal;
+        animation-timing-function: var(--ease-woi);
+        animation-fill-mode: both;
+        animation-timeline: view();
+        animation-range: entry 8% cover 32%;
+      }
+
+      /* Same reveal, starting a little later — used to stagger neighbours. */
+      .u-reveal--late {
+        animation-name: reveal;
+        animation-timing-function: var(--ease-woi);
+        animation-fill-mode: both;
+        animation-timeline: view();
+        animation-range: entry 20% cover 46%;
+      }
+
+      @keyframes reveal {
+        from {
+          opacity: 0;
+          transform: translateY(3.5rem);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes maskUp {
+        from {
+          transform: translateY(110%);
+        }
+        to {
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes wipeUp {
+        from {
+          clip-path: inset(0% 0% 100% 0%);
+        }
+        to {
+          clip-path: inset(0% 0% 0% 0%);
+        }
+      }
+
+      @keyframes parallax {
+        from {
+          transform: translateY(-5%);
+        }
+        to {
+          transform: translateY(5%);
+        }
+      }
+
+      @keyframes driftA {
+        from {
+          transform: translate3d(0, 0, 0) scale(1);
+        }
+        to {
+          transform: translate3d(8rem, 5rem, 0) scale(1.15);
+        }
+      }
+
+      @keyframes driftB {
+        from {
+          transform: translate3d(0, 0, 0) scale(1);
+        }
+        to {
+          transform: translate3d(-7rem, -6rem, 0) scale(1.1);
+        }
+      }
+
+      /* ── Page shell (playground only) ─────────────────────────────────── */
+      .page {
+        background-color: var(--blue-900);
+        color: var(--white);
+        font-family: var(--font-body);
+        font-weight: 400;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .filler {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 60vh;
+        background-color: var(--blue-900);
+      }
+
+      .filler__text {
+        color: var(--white-40);
+        font-size: 0.875rem;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+      }
+
+      /* ── Section ──────────────────────────────────────────────────────── */
+      .blog {
+        position: relative;
+        overflow: hidden;
+        padding-top: 9rem;
+        padding-bottom: 9rem;
+        background-color: var(--blue-900);
+      }
+
+      .blog__inner {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        max-width: 80rem;
+        margin-right: auto;
+        margin-left: auto;
+        padding-right: 1.5rem;
+        padding-left: 1.5rem;
+      }
+
+      /* Ambient glows — slow endless drift */
+      .blog__glow {
+        position: absolute;
+        z-index: 0;
+        width: 40rem;
+        height: 40rem;
+        border-radius: 50%;
+        filter: blur(6rem);
+        opacity: 0.28;
+        pointer-events: none;
+        animation-duration: 16s;
+        animation-direction: alternate;
+        animation-iteration-count: infinite;
+        animation-timing-function: ease-in-out;
+      }
+
+      .blog__glow--a {
+        top: -10rem;
+        left: -12rem;
+        background-image: radial-gradient(
+          circle,
+          var(--green) 0%,
+          transparent 70%
+        );
+        animation-name: driftA;
+      }
+
+      .blog__glow--b {
+        right: -14rem;
+        bottom: -8rem;
+        background-image: radial-gradient(
+          circle,
+          var(--pink) 0%,
+          transparent 70%
+        );
+        animation-name: driftB;
+        animation-duration: 21s;
+      }
+
+      /* ── Section header ───────────────────────────────────────────────── */
+      .blog__head {
+        max-width: 45rem;
+        margin-bottom: 3rem;
+      }
+
+      .blog__tagline {
+        margin-bottom: 1rem;
+        color: var(--green);
+        font-size: 1rem;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+
+      /* Clipping wrapper for the heading mask reveal */
+      .blog__title-mask {
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.15em;
+      }
+
+      .blog__title {
+        color: var(--white);
+        font-family: var(--font-heading);
+        font-size: 3rem;
+        font-weight: 900;
+        line-height: 1.1;
+        animation-name: maskUp;
+        animation-timing-function: var(--ease-woi);
+        animation-fill-mode: both;
+        animation-timeline: view();
+        animation-range: entry 5% cover 30%;
+      }
+
+      .blog__lede {
+        color: var(--white-70);
+        font-size: 1.125rem;
+        line-height: 1.6;
+      }
+
+      /* ── Category links ───────────────────────────────────────────────── */
+      .blog__filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-bottom: 4rem;
+        padding-bottom: 2rem;
+        border-bottom: 0.0625rem solid var(--white-12);
+      }
+
+      .blog__filter {
+        padding: 0.75rem 1.5rem;
+        border: 0.0625rem solid var(--white-12);
+        border-radius: var(--radius-pill);
+        color: var(--white-70);
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition:
+          color 0.35s ease,
+          border-color 0.35s ease,
+          background-color 0.35s ease,
+          transform 0.35s var(--ease-woi);
+      }
+
+      .blog__filter:hover {
+        border-color: var(--white-40);
+        color: var(--white);
+        transform: translateY(-0.125rem);
+      }
+
+      .blog__filter:focus-visible {
+        outline: 0.125rem solid var(--green);
+        outline-offset: 0.25rem;
+      }
+
+      /* Active state as its own class — no compound selector needed */
+      .blog__filter--active {
+        padding: 0.75rem 1.5rem;
+        border: 0.0625rem solid transparent;
+        border-radius: var(--radius-pill);
+        background-color: var(--green);
+        color: var(--blue-900);
+        font-size: 1rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: transform 0.35s var(--ease-woi);
+      }
+
+      .blog__filter--active:hover {
+        transform: translateY(-0.125rem);
+      }
+
+      /* ── Featured post ────────────────────────────────────────────────── */
+      .feature {
+        display: grid;
+        grid-template-columns: 1.15fr 1fr;
+        align-items: center;
+        gap: 3.5rem;
+        margin-bottom: 6rem;
+      }
+
+      .feature__media {
+        position: relative;
+        display: block;
+        overflow: hidden;
+        aspect-ratio: 4 / 3;
+        border-radius: var(--radius-lg);
+        background-color: var(--blue-800);
+        text-decoration: none;
+        animation-name: wipeUp;
+        animation-timing-function: var(--ease-woi);
+        animation-fill-mode: both;
+        animation-timeline: view();
+        animation-range: entry 5% cover 35%;
+      }
+
+      /* Taller than its frame so the parallax can travel without gaps */
+      .feature__img {
+        position: absolute;
+        top: -7%;
+        left: 0;
+        display: block;
+        width: 100%;
+        height: 114%;
+        object-fit: cover;
+        animation-name: parallax;
+        animation-timing-function: linear;
+        animation-fill-mode: both;
+        animation-timeline: view();
+        animation-range: cover 0% cover 100%;
+        transition: scale 0.7s var(--ease-woi);
+      }
+
+      .feature__img:hover {
+        scale: 1.05;
+      }
+
+      .feature__badge {
+        position: absolute;
+        top: 1.25rem;
+        left: 1.25rem;
+        z-index: 1;
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-pill);
+        background-color: var(--blue-900);
+        color: var(--yellow);
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .feature__body {
+        max-width: 32rem;
+      }
+
+      .feature__meta {
+        margin-bottom: 1rem;
+        color: var(--green);
+        font-size: 0.875rem;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .feature__title {
+        margin-bottom: 1.25rem;
+        color: var(--white);
+        font-family: var(--font-heading);
+        font-size: 2.5rem;
+        font-weight: 900;
+        line-height: 1.2;
+      }
+
+      .feature__excerpt {
+        margin-bottom: 2rem;
+        color: var(--white-70);
+        font-size: 1.125rem;
+        line-height: 1.6;
+      }
+
+      .feature__link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 0.0625rem solid var(--white-40);
+        color: var(--white);
+        font-size: 1rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-decoration: none;
+        text-transform: uppercase;
+        transition:
+          gap 0.4s var(--ease-woi),
+          border-color 0.4s ease,
+          color 0.4s ease;
+      }
+
+      .feature__link:hover {
+        gap: 1.25rem;
+        border-color: var(--green);
+        color: var(--green);
+      }
+
+      .feature__link:focus-visible {
+        outline: 0.125rem solid var(--green);
+        outline-offset: 0.5rem;
+      }
+
+      /* ── Post grid + cards ────────────────────────────────────────────── */
+      .blog__grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 3rem 2.5rem;
+        margin-bottom: 4.5rem;
+      }
+
+      .card {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+
+      .card__media {
+        position: relative;
+        display: block;
+        overflow: hidden;
+        aspect-ratio: 16 / 11;
+        border-radius: var(--radius-md);
+        background-color: var(--blue-800);
+        text-decoration: none;
+      }
+
+      .card__img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: scale 0.7s var(--ease-woi);
+      }
+
+      .card__img:hover {
+        scale: 1.06;
+      }
+
+      .card__body {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      .card__meta {
+        color: var(--white-40);
+        font-size: 0.875rem;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      .card__title-link {
+        color: var(--white);
+        font-family: var(--font-heading);
+        font-size: 1.5rem;
+        font-weight: 900;
+        line-height: 1.3;
+        text-decoration: none;
+        transition: color 0.35s ease;
+      }
+
+      .card__title-link:hover {
+        color: var(--green);
+      }
+
+      .card__excerpt {
+        color: var(--white-70);
+        font-size: 1rem;
+        line-height: 1.6;
+      }
+
+      .card__cta {
+        display: inline-flex;
+        align-items: center;
+        align-self: flex-start;
+        gap: 0.5rem;
+        margin-top: 0.25rem;
+        color: var(--green);
+        font-size: 0.875rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-decoration: none;
+        text-transform: uppercase;
+        transition:
+          gap 0.4s var(--ease-woi),
+          color 0.35s ease;
+      }
+
+      .card__cta:hover {
+        gap: 1rem;
+        color: var(--white);
+      }
+
+      .card__cta:focus-visible {
+        outline: 0.125rem solid var(--green);
+        outline-offset: 0.375rem;
+      }
+
+      /* Inline label/arrow spans — they inherit colour and font from their
+         link; the hover `gap` on the link is what pulls the arrow away. */
+      .feature__link-label,
+      .feature__link-arrow,
+      .card__cta-label,
+      .card__cta-arrow,
+      .blog__button-label,
+      .blog__button-arrow {
+        display: inline-block;
+      }
+
+      /* ── Footer row ───────────────────────────────────────────────────── */
+      .blog__foot {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.5rem;
+        padding-top: 2.5rem;
+        border-top: 0.0625rem solid var(--white-12);
+      }
+
+      .blog__count {
+        color: var(--white-40);
+        font-size: 0.875rem;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      .blog__button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem 2rem;
+        border-radius: var(--radius-pill);
+        background-color: var(--green);
+        color: var(--blue-900);
+        font-family: var(--font-heading);
+        font-size: 1rem;
+        font-weight: 900;
+        text-decoration: none;
+        transition:
+          gap 0.4s var(--ease-woi),
+          transform 0.4s var(--ease-woi),
+          background-color 0.35s ease;
+      }
+
+      .blog__button:hover {
+        gap: 1.25rem;
+        transform: translateY(-0.1875rem);
+        background-color: var(--white);
+      }
+
+      .blog__button:focus-visible {
+        outline: 0.125rem solid var(--white);
+        outline-offset: 0.375rem;
+      }
+
+      /* ── Responsive — Webflow breakpoints in rem (991 / 767 / 479 px) ─── */
+      @media screen and (max-width: 61.9375rem) {
+        .blog {
+          padding-top: 6rem;
+          padding-bottom: 6rem;
+        }
+
+        .blog__title {
+          font-size: 2rem;
+        }
+
+        .feature {
+          grid-template-columns: 1fr;
+          gap: 2rem;
+          margin-bottom: 4.5rem;
+        }
+
+        .feature__title {
+          font-size: 1.5rem;
+        }
+
+        .blog__grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 2.5rem 2rem;
+        }
+      }
+
+      @media screen and (max-width: 47.9375rem) {
+        .blog__glow {
+          width: 24rem;
+          height: 24rem;
+        }
+
+        .blog__filters {
+          margin-bottom: 3rem;
+        }
+
+        .blog__grid {
+          grid-template-columns: 1fr;
+          gap: 2.5rem;
+        }
+
+        .blog__lede {
+          font-size: 1rem;
+        }
+
+        .feature__excerpt {
+          font-size: 1rem;
+        }
+      }
+
+      @media screen and (max-width: 29.9375rem) {
+        .blog__filter {
+          padding: 0.625rem 1.125rem;
+          font-size: 0.875rem;
+        }
+
+        .blog__filter--active {
+          padding: 0.625rem 1.125rem;
+          font-size: 0.875rem;
+        }
+
+        .blog__foot {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .blog__button {
+          width: 100%;
+          justify-content: center;
+        }
+      }
+
+      /* ── Reduced motion — everything static, nothing hidden ───────────── */
+      @media (prefers-reduced-motion: reduce) {
+        .u-reveal {
+          animation: none;
+        }
+
+        .u-reveal--late {
+          animation: none;
+        }
+
+        .blog__title {
+          animation: none;
+        }
+
+        .blog__glow {
+          animation: none;
+        }
+
+        .feature__media {
+          animation: none;
+        }
+
+        .feature__img {
+          animation: none;
+        }
+      }
+    </style>
+  </head>
+
+  <body class="page">
+    <!-- Filler so the section can be scrolled into view (playground only) -->
+    <div class="filler">
+      <p class="filler__text">Scroll ↓</p>
+    </div>
+
+    <section class="blog">
+      <!-- Ambient glows (decorative) -->
+      <div class="blog__glow blog__glow--a"></div>
+      <div class="blog__glow blog__glow--b"></div>
+
+      <div class="blog__inner">
+        <!-- ── Section header ──────────────────────────────────────────── -->
+        <header class="blog__head">
+          <p class="blog__tagline u-reveal">The WOI Journal</p>
+          <div class="blog__title-mask">
+            <h2 class="blog__title">Stories from inside the light</h2>
+          </div>
+          <p class="blog__lede u-reveal">
+            Behind the scenes of the world's largest walk-through light
+            experiences — how the shows are built, who builds them, and how to
+            make the most of your night out.
+          </p>
+        </header>
+
+        <!-- ── Category links ──────────────────────────────────────────── -->
+        <div class="blog__filters u-reveal">
+          <a class="blog__filter--active" href="#">All stories</a>
+          <a class="blog__filter" href="#">Behind the scenes</a>
+          <a class="blog__filter" href="#">Events</a>
+          <a class="blog__filter" href="#">Visitor guides</a>
+        </div>
+
+        <!-- ── Featured post ───────────────────────────────────────────── -->
+        <article class="feature">
+          <a class="feature__media" href="#">
+            <img
+              class="feature__img"
+              src="../assets/g5.jpg"
+              alt="Illuminated lantern tunnel at night"
+            />
+            <span class="feature__badge">Featured story</span>
+          </a>
+          <div class="feature__body u-reveal">
+            <p class="feature__meta">Behind the scenes · 6 min read</p>
+            <h3 class="feature__title">
+              How 4 million bulbs become a single walk-through world
+            </h3>
+            <p class="feature__excerpt">
+              Twelve weeks, nine trailers of steel and a team that never sees
+              daylight. We followed the WOI build crew from the first anchor
+              stake to the moment the switch is flipped.
+            </p>
+            <a class="feature__link" href="#">
+              <span class="feature__link-label">Read the story</span>
+              <span class="feature__link-arrow">→</span>
+            </a>
+          </div>
+        </article>
+
+        <!-- ── Post grid ───────────────────────────────────────────────── -->
+        <div class="blog__grid">
+          <article class="card u-reveal">
+            <a class="card__media" href="#">
+              <img
+                class="card__img"
+                src="../assets/g1.jpg"
+                alt="Crew installing a light sculpture"
+                loading="lazy"
+              />
+            </a>
+            <div class="card__body">
+              <p class="card__meta">Behind the scenes · 4 min</p>
+              <a class="card__title-link" href="#">
+                Meet the crew that builds the night shift
+              </a>
+              <p class="card__excerpt">
+                Riggers, electricians and lantern artists on what it takes to
+                raise a show in three weeks.
+              </p>
+              <a class="card__cta" href="#">
+                <span class="card__cta-label">Read more</span>
+                <span class="card__cta-arrow">→</span>
+              </a>
+            </div>
+          </article>
+
+          <article class="card u-reveal--late">
+            <a class="card__media" href="#">
+              <img
+                class="card__img"
+                src="../assets/g2.jpg"
+                alt="Family walking through a glowing arch"
+                loading="lazy"
+              />
+            </a>
+            <div class="card__body">
+              <p class="card__meta">Visitor guides · 3 min</p>
+              <a class="card__title-link" href="#">
+                The best time to arrive with young kids
+              </a>
+              <p class="card__excerpt">
+                Strollers, snack stops and the quietest 40 minutes of the
+                evening — planned out hour by hour.
+              </p>
+              <a class="card__cta" href="#">
+                <span class="card__cta-label">Read more</span>
+                <span class="card__cta-arrow">→</span>
+              </a>
+            </div>
+          </article>
+
+          <article class="card u-reveal">
+            <a class="card__media" href="#">
+              <img
+                class="card__img"
+                src="../assets/g3.jpg"
+                alt="Lantern dragon lit up in blue"
+                loading="lazy"
+              />
+            </a>
+            <div class="card__body">
+              <p class="card__meta">Events · 5 min</p>
+              <a class="card__title-link" href="#">
+                Six new worlds opening this winter season
+              </a>
+              <p class="card__excerpt">
+                From Phoenix to Memphis — every new installation on the 2026
+                tour, and what makes each one different.
+              </p>
+              <a class="card__cta" href="#">
+                <span class="card__cta-label">Read more</span>
+                <span class="card__cta-arrow">→</span>
+              </a>
+            </div>
+          </article>
+
+          <article class="card u-reveal--late">
+            <a class="card__media" href="#">
+              <img
+                class="card__img"
+                src="../assets/g4.jpg"
+                alt="Crowd under an illuminated canopy"
+                loading="lazy"
+              />
+            </a>
+            <div class="card__body">
+              <p class="card__meta">Events · 2 min</p>
+              <a class="card__title-link" href="#">
+                Why opening night sells out before the lights go on
+              </a>
+              <p class="card__excerpt">
+                A look at the numbers behind the first weekend, and how tickets
+                are released city by city.
+              </p>
+              <a class="card__cta" href="#">
+                <span class="card__cta-label">Read more</span>
+                <span class="card__cta-arrow">→</span>
+              </a>
+            </div>
+          </article>
+
+          <article class="card u-reveal">
+            <a class="card__media" href="#">
+              <img
+                class="card__img"
+                src="../assets/g6.jpg"
+                alt="Artisan painting a silk lantern"
+                loading="lazy"
+              />
+            </a>
+            <div class="card__body">
+              <p class="card__meta">Behind the scenes · 7 min</p>
+              <a class="card__title-link" href="#">
+                The silk, steel and hand-painting of one lantern
+              </a>
+              <p class="card__excerpt">
+                Every creature starts as a wire drawing. We traced a single
+                lantern from sketch to switch-on.
+              </p>
+              <a class="card__cta" href="#">
+                <span class="card__cta-label">Read more</span>
+                <span class="card__cta-arrow">→</span>
+              </a>
+            </div>
+          </article>
+
+          <article class="card u-reveal--late">
+            <a class="card__media" href="#">
+              <img
+                class="card__img"
+                src="../assets/g7.jpg"
+                alt="Visitor photographing a light tunnel"
+                loading="lazy"
+              />
+            </a>
+            <div class="card__body">
+              <p class="card__meta">Visitor guides · 4 min</p>
+              <a class="card__title-link" href="#">
+                How to photograph a light show on your phone
+              </a>
+              <p class="card__excerpt">
+                Five settings, one rule about flash, and the three spots that
+                always photograph best.
+              </p>
+              <a class="card__cta" href="#">
+                <span class="card__cta-label">Read more</span>
+                <span class="card__cta-arrow">→</span>
+              </a>
+            </div>
+          </article>
+        </div>
+
+        <!-- ── Footer row ──────────────────────────────────────────────── -->
+        <div class="blog__foot u-reveal">
+          <p class="blog__count">Showing 6 of 24 stories</p>
+          <a class="blog__button" href="#">
+            <span class="blog__button-label">View all stories</span>
+            <span class="blog__button-arrow">→</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filler after the section (playground only) -->
+    <div class="filler">
+      <p class="filler__text">End of playground</p>
+    </div>
+  </body>
+</html>

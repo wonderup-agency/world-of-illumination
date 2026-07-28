@@ -20,8 +20,10 @@
 
       <!--
         The ONLY Webflow binding: data-map-lat / data-map-lng on the wrapper.
-        Optional: a .location_logo image inside → used as the marker face.
-        Remove the logo below to see the plain pin fallback.
+        Marker priority: [data-map-marker] custom pin → .location_logo circular
+        face → plain pin. Comment out the data-map-marker img below to see the
+        logo face, and the logo too to see the plain pin.
+        The reset button is injected by JS (no [data-map="reset"] here).
       -->
       <div
         data-component="location-map"
@@ -33,6 +35,14 @@
           class="location_logo hide"
           src="../assets/g1.jpg"
           alt=""
+          style="display: none"
+        />
+        <!-- Custom map pin (CMS image field, hidden page-side) -->
+        <img
+          src="https://cdn.prod.website-files.com/6a205e39ec626f3db3abd22f/6a2b49c1e02ead14fc478c03_Theme%3DCandy.svg"
+          data-map-marker="img"
+          alt=""
+          class="hide"
           style="display: none"
         />
         <div data-map="map" class="location-map_map"></div>
