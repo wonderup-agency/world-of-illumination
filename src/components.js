@@ -62,6 +62,10 @@ export default [
     importFn: () => import('./components/tabs-map.js'),
   },
   {
+    selector: "[data-component='tabs-map-v2']",
+    importFn: () => import('./components/tabs-map-v2.js'),
+  },
+  {
     selector: "[data-component='horizontal-scroll']",
     importFn: () => import('./components/horizontal-scroll.js'),
   },

@@ -12,6 +12,25 @@ data-component="shows"
 
 **Important:** `show_featured-logo` is no longer used — hide or remove it from Webflow. Only `show_featured-img` is managed by JS.
 
+**CMS-driven (current setup on Home)**: `show_orbit` is a Collection List bound to
+the **Themes** collection (the same collection used by `theme-image-slider` and
+the Themes page) — not a separate "Shows" collection (that name is already used
+by the per-location/venue entity that powers `locations`/`tabs-map`). No JS
+changes were needed for this — the component only ever queries by class, so a
+CMS-rendered `.show_item` works identically to a static one. Field mapping:
+
+| Class | CMS field |
+| --- | --- |
+| `.show_item-logo` | Theme Logo |
+| `.show_item-featured` | Hero - Main Image |
+
+The Collection Item element itself must carry the `show_item` class directly
+(not just a wrapper around it) — `querySelectorAll('.show_item')` only finds it
+there. No sort field is applied; items render in the collection's default
+order. To pull a theme out of the orbit, set it to Draft in the CMS (Webflow
+excludes draft items from the rendered list automatically) rather than adding
+a `hide` class by hand.
+
 ## Behavior
 
 - **Init**: On desktop (≥992px), reads orbit geometry from the DOM, places all logos in their elliptical slot positions (slot 0 is scaled up as the active logo), sets the circle image to the first active show, then auto-advances every `SHOW_DURATION` seconds. Each advance slides all logos one slot — the arriving logo naturally scales up and brightens, the leaving logo scales down and dims. No effect on tablet/mobile.
@@ -46,4 +65,4 @@ Elements matching `[data-component='shows']` must contain:
 - **Circle crossfade**: True crossfade — a JS-created back layer fades the new image in while the old fades out simultaneously (no blank moment). Starts at 50% of `STEP_DURATION`, duration 0.5s.
 - **srcset handling**: `swapImg()` updates both `src` and `srcset`/`sizes` — required because browsers prioritize `srcset` over `src`.
 - **Hidden zone transitions**: Items arriving from the hidden zone teleport to position then fade in. Items going to the hidden zone slide straight down and fade out.
-- **Dynamic N**: Works with any number of shows. Add/remove `hide` class in Webflow to include or exclude items without touching JS. CMS-compatible — just maintain the `.show_item` structure in the collection template.
+- **Dynamic N**: Works with any number of shows. CMS-driven via the Themes Collection List (see Webflow Setup) — adding/archiving/drafting a Theme item changes the orbit automatically, no code or manual `hide` class needed. The `hide` class mechanism described above still works too, for a manually-added `.show_item` outside the CMS template.
