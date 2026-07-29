@@ -55,6 +55,29 @@ case the marker falls back to the logo face. Same two guards as tabs-map.js:
   - the src ATTRIBUTE (not img.src) — an <img> with an empty src resolves .src
     to the page URL, which would read as a valid image and render a broken pin.
 */
+/*
+Where to look for that custom pin. In Webflow it's very easy to drop the hidden
+marker <img> just OUTSIDE the map wrapper (a sibling inside the same section
+wrapper), in which case a wrapper-only lookup silently falls back to the plain
+pin. So: check the wrapper first, then walk up the ancestors and use the first
+one that holds a [data-map-marker] — but stop as soon as an ancestor contains
+more than one location-map, so a CMS list of maps can never borrow a
+neighbour's pin. Returns null when there's no unambiguous scope.
+*/
+const markerScope = (wrapper) => {
+  if (wrapper.querySelector('[data-map-marker]')) return wrapper
+
+  let node = wrapper.parentElement
+  while (node) {
+    if (node.querySelectorAll("[data-component='location-map']").length > 1) {
+      return null
+    }
+    if (node.querySelector('[data-map-marker]')) return node
+    node = node.parentElement
+  }
+  return null
+}
+
 const markerImage = (scope) => {
   const none = { src: '', srcset: '' }
   const el = scope?.querySelector('[data-map-marker]')
@@ -86,7 +109,7 @@ class LocationMap {
     // Optional marker face: reuse a venue/event logo if present.
     this.logo = wrapper.querySelector('.location_logo')?.src || ''
     // Optional custom pin image — takes precedence over the logo face.
-    this.pin = markerImage(wrapper)
+    this.pin = markerImage(markerScope(wrapper))
 
     this.map = null
     this.initMap()

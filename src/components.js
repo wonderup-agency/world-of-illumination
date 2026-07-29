@@ -14,6 +14,10 @@
 
 export default [
   {
+    selector: "[data-component='hero-video']",
+    importFn: () => import('./components/hero-video.js'),
+  },
+  {
     selector: "[data-component='nested-dropdown-fix']",
     importFn: () => import('./components/nested-dropdown-fix.js'),
   },
