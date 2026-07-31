@@ -154,8 +154,9 @@ class TabsMap {
         // State code lives in a hidden child bound to the CMS's State Code
         // field: <div data-tabs-map="item-state" class="hide">TN</div>
         const stateCode =
-          card.querySelector('[data-tabs-map="item-state"]')?.textContent.trim() ||
-          ''
+          card
+            .querySelector('[data-tabs-map="item-state"]')
+            ?.textContent.trim() || ''
         const text = card.querySelector('.location_text-wrapper')
         const priceWrap = card.querySelector('.price-wrapper')
         // Coordinates live in hidden child elements bound to the CMS Lat/Lng
