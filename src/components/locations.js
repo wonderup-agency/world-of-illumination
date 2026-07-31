@@ -18,6 +18,19 @@ export default function (elements) {
 
     if (!container) return
 
+    // Native loading="lazy" measures each image's distance from the viewport
+    // using the slider's untransformed layout (before centeredSlides shifts
+    // the row via translateX). Images that land far enough to the right in
+    // that initial layout never get marked as "near enough" to load and stay
+    // pending indefinitely -- collapsing their card's height, since Webflow
+    // doesn't reserve an aspect-ratio for it -- until a drag/nav interaction
+    // happens to reposition the row and finally trigger them. Forcing eager
+    // loading sidesteps the wrong distance measurement entirely; this is a
+    // small, bounded set of images so there's no real lazy-load benefit lost.
+    container.querySelectorAll('.location_image').forEach((img) => {
+      img.loading = 'eager'
+    })
+
     const wrapper = container.querySelector('.swiper-wrapper')
     const slides = Array.from(container.querySelectorAll('.swiper-slide'))
     // Biases toward more items on the right for even slide counts (odd counts stay symmetric)
