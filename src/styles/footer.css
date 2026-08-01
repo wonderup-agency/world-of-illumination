@@ -1,29 +1,89 @@
-/* footer reveal — pure-CSS sticky reveal (no ScrollTrigger pin, so it never
-   fights Lenis). The image sticks full-screen while the footer content scrolls
-   up over it. Gated by .is-reveal (added by footer.js) so the static footer is
-   untouched without JS / under reduced-motion. */
+/* footer reveal — pure-CSS sticky curtain (no ScrollTrigger pin, so it never
+   fights Lenis). The image sits above the footer as a full-screen curtain and
+   lifts away while the footer stays pinned underneath, uncovering it from the
+   bottom up. Almost all of the curtain goes: it stops with only --footer-strip
+   of itself still on screen — exactly the viewport's leftover above the footer —
+   so the page ends on the whole footer visible at once with a band of image
+   above it, and the footer never takes the full viewport.
+
+   Timeline (V = viewport, S = --footer-strip, H = footer height):
+     lift    scroll 0 → V-S   curtain rises, footer frozen at y = S
+     release scroll V-S → H   curtain parked at S, footer scrolls out normally
+   The footer's bottom lands exactly on the viewport bottom as the page bottoms
+   out — no gap and no dead scroll at either end.
+
+   Because S is exactly the viewport's leftover above the footer, the release
+   phase has zero length whenever the footer fits on screen: the footer is
+   uncovered whole and then simply stops, instead of drifting on behind the
+   parked curtain (which reads as a bounce). The release only ever runs for a
+   footer taller than the viewport, where S is 0 — the curtain leaves entirely
+   and the footer scrolls out normally, so its lower rows stay reachable.
+
+   footer.js adds .is-reveal, measures --footer-height, appends the spacer and
+   drives the curtain's parallax. */
 
 .footer_section.is-reveal {
+  /* How much of the curtain is still on screen once it stops. Not a style knob —
+     it is exactly the viewport's leftover above the footer, which is what makes
+     the whole footer land visible and flush with the viewport bottom. Any larger
+     and the footer would have to slide on behind the curtain to reach the page
+     bottom, hiding its top rows; any smaller and it would stop short, leaving
+     dead space below. Clamped at 0 for a footer taller than the viewport, where
+     there is no leftover and the curtain leaves completely.
+     The lever for showing more or less image is the footer's own height. */
+  --footer-strip: max(0px, calc(100vh - var(--footer-height, 100vh)));
+
   position: relative;
   display: flex;
   flex-direction: column;
+  /* Keeps the z-indexes below local to this section, so a neighbouring
+     section's own stacking (e.g. horizontal-scroll's curtain) can't draw over
+     the image. */
+  isolation: isolate;
 }
 
-/* Image: visually first (order -1), sticks full-screen behind the content. */
+/* Curtain: visually first (order -1), full-screen, stacked over the footer.
+   The negative sticky top is what parks it with only --footer-strip showing
+   instead of letting it scroll away completely. overflow: hidden clips the
+   oversized image so it can be parallaxed inside. */
 .footer_section.is-reveal .footer_image-wrapper {
   order: -1;
   position: sticky;
-  top: 0;
+  top: calc(var(--footer-strip) - 100vh);
   height: 100vh;
-  z-index: 0;
-}
-.footer_section.is-reveal .footer_image {
-  height: 100%;
-  object-fit: cover;
+  overflow: hidden;
+  z-index: 1;
 }
 
-/* Content rises over the sticky image as the page scrolls. */
+/* The image is deliberately taller than its wrapper — that surplus IS the
+   parallax travel footer.js translates through as the curtain lifts, so the
+   image drifts slower than the curtain around it. */
+.footer_section.is-reveal .footer_image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 130%;
+  object-fit: cover;
+  will-change: transform;
+}
+
+/* Footer: pulled a full curtain-travel up so it starts completely hidden behind
+   the curtain, pinned just under the strip while the curtain lifts, then
+   released. The pin is what makes the curtain read as uncovering it rather than
+   both just scrolling together. */
 .footer_section.is-reveal .footer_component {
-  position: relative;
-  z-index: 1;
+  position: sticky;
+  top: var(--footer-strip);
+  margin-top: calc(var(--footer-strip) - 100vh);
+  z-index: 0;
+}
+
+/* Appended by footer.js — sticky needs slack below the footer to pin through,
+   and this is exactly the curtain's travel. Covered by the footer at every
+   scroll position, so it is never visible. */
+.footer_section.is-reveal .footer_reveal-spacer {
+  flex: 0 0 auto;
+  height: calc(100vh - var(--footer-strip));
+  pointer-events: none;
 }
