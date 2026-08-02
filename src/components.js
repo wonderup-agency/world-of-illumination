@@ -14,6 +14,10 @@
 
 export default [
   {
+    selector: "[data-component='section-reveal']",
+    importFn: () => import('./components/section-reveal.js'),
+  },
+  {
     selector: "[data-component='hero-video']",
     importFn: () => import('./components/hero-video.js'),
   },

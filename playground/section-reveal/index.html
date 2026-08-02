@@ -1,0 +1,1255 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Playground — Section reveal (curtain + expand)</title>
+
+    <!-- GSAP + ScrollTrigger via CDN (Webflow provides these globally on the site) -->
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+    <!-- Lenis smooth scroll (bundled site-wide in global.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Josefin+Sans:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --blue-950: #03061c;
+        --blue-900: #060a2a;
+        --blue-800: #1a1f39;
+        --white: #f0efea;
+        --pink: #be0067;
+        --teal: #4cba9f;
+        --yellow: #e3a336;
+        --heading: 'Archivo Black', system-ui, sans-serif;
+        --body: 'Josefin Sans', system-ui, sans-serif;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      img,
+      video {
+        display: block;
+        max-width: 100%;
+      }
+
+      body {
+        font-family: var(--body);
+        background: var(--blue-950);
+        color: var(--white);
+        /* No overflow-x/clip on any scroll ancestor — it turns the body into a
+           scroll container and breaks position: fixed pinning. */
+      }
+
+      h1,
+      h2 {
+        font-family: var(--heading);
+        font-weight: 400;
+        line-height: 1.1;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        font-size: clamp(2.5rem, 7vw, 6.25rem);
+      }
+
+      h2 {
+        font-size: clamp(2rem, 5vw, 3.5rem);
+      }
+
+      p {
+        font-size: 1.125rem;
+        line-height: 1.5;
+        max-width: 46ch;
+      }
+
+      a:focus-visible {
+        outline: 0.1875rem solid var(--yellow);
+        outline-offset: 0.25rem;
+        border-radius: 0.125rem;
+      }
+
+      /* ─── Client-First-ish layout. Style only: the JS never reads a class. ── */
+
+      .padding-global {
+        padding-inline: 5vw;
+      }
+
+      .container-large {
+        width: 100%;
+        max-width: 80rem;
+        margin-inline: auto;
+      }
+
+      .section-reveal_content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 1.5rem;
+        min-height: 100vh;
+        /* Horizontal room so the widest clip-path inset can never crop text or
+           a focusable control: content sits inside the deepest inset used. */
+        padding-inline: 4vw;
+        padding-block: max(12vh, 7rem);
+      }
+
+      .section-reveal_media {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+      }
+
+      .section-reveal_media img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .section-reveal_media::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          to bottom,
+          rgba(3, 6, 28, 0.4),
+          rgba(3, 6, 28, 0.82)
+        );
+      }
+
+      .eyebrow {
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-size: 0.875rem;
+        color: var(--teal);
+      }
+
+      .button {
+        display: inline-flex;
+        align-self: flex-start;
+        padding: 0.875rem 1.75rem;
+        border-radius: 6.25rem;
+        background: var(--white);
+        color: var(--blue-950);
+        font-family: var(--heading);
+        font-size: 1rem;
+        text-transform: uppercase;
+        text-decoration: none;
+      }
+
+      .demo-nav {
+        position: fixed;
+        inset: 0 0 auto 0;
+        z-index: 100;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.25rem;
+        padding: 0.875rem 5vw;
+        font-size: 0.8125rem;
+        font-weight: 700;
+        /* Deliberately opaque, no backdrop-filter: a fixed blurred bar forces a
+           full-viewport blur repaint on every scrolled frame, which reads as
+           scroll jank the reveals get blamed for. Demo chrome, not the effect. */
+        background: rgb(6, 10, 42);
+      }
+
+      .demo-nav a {
+        color: var(--white);
+      }
+
+      .demo-tuner {
+        position: fixed;
+        right: 1.25rem;
+        bottom: 1.25rem;
+        z-index: 100;
+        display: flex;
+        flex-direction: column;
+        gap: 0.875rem;
+        width: 15rem;
+        padding: 1rem;
+        border: 0.0625rem solid rgba(240, 239, 234, 0.2);
+        border-radius: 0.75rem;
+        background: rgb(6, 10, 42);
+        font-size: 0.75rem;
+      }
+
+      .demo-tuner label {
+        display: flex;
+        flex-direction: column;
+        gap: 0.375rem;
+      }
+
+      .demo-tuner span {
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .demo-tuner output {
+        color: var(--teal);
+      }
+
+      .demo-tuner input {
+        width: 100%;
+        accent-color: var(--teal);
+      }
+
+      .demo-tuner small,
+      .demo-tuner_note {
+        font-size: 0.6875rem;
+        line-height: 1.35;
+        max-width: none;
+        opacity: 0.65;
+      }
+
+      /* Demo palettes. Every reveal section is opaque — see the console guard. */
+      .is-intro {
+        background: var(--blue-800);
+      }
+      .is-curtain-bg {
+        background: var(--pink);
+      }
+      .is-under {
+        background: var(--blue-900);
+      }
+      .is-expand-a {
+        background: var(--teal);
+        color: var(--blue-950);
+      }
+      .is-expand-a .eyebrow,
+      .is-expand-b .eyebrow {
+        color: var(--blue-950);
+      }
+      .is-expand-b {
+        background: var(--yellow);
+        color: var(--blue-950);
+      }
+      /* 150vh so its data-section-reveal-distance="1.5" is honoured rather
+         than clamped: a reveal can never outlast the section's own height. */
+      .is-expand-b .section-reveal_content {
+        min-height: 150vh;
+        justify-content: space-between;
+      }
+      .is-plain {
+        background: var(--blue-800);
+      }
+      .is-tall .section-reveal_content {
+        min-height: 190vh;
+        justify-content: space-between;
+      }
+
+      /* ─────────────────────────────────────────────────────────────────────
+         section-reveal — structural CSS
+
+         Nothing here does anything until JS adds a state class, so with JS off
+         (or under reduced motion, or below 992px) every section stays in
+         normal flow, in order, fully readable.
+         ───────────────────────────────────────────────────────────────────── */
+
+      /* Keeps the z-index ladder JS builds for the reveal pairs local to this
+         component — the rest of the page never has to know about it.
+         `isolation` (unlike transform/filter/will-change) does not create a
+         containing block, so ScrollTrigger's position: fixed pins still work. */
+      [data-component='section-reveal'] {
+        isolation: isolate;
+      }
+
+      [data-section-reveal] {
+        position: relative;
+      }
+
+      /* position: relative — a partner section may carry no data-section-reveal
+         of its own, and z-index is inert on a static element, so the stacking
+         ladder would silently do nothing for it.
+
+         min-height — both variants only stay gap-free while every section
+         involved is at least a viewport tall: the curtain has to cover the
+         screen on its own, and the section underneath has to still cover it
+         once the curtain is gone. A requirement of the effect, not a style
+         choice. */
+      .section-reveal--curtain,
+      .section-reveal--held,
+      .section-reveal--rising,
+      .section-reveal--pinned {
+        position: relative;
+        min-height: 100vh;
+      }
+
+      /* Half a rem over a viewport, on purpose. A rising section has to be
+         covering the screen when the pin under it releases, and an exact fit
+         leaves no margin: Lenis scrolls in fractional pixels, so an exact-fit
+         section can sit half a pixel low and let a sliver of the base be seen
+         snapping. The overshoot is invisible and removes the whole class of
+         one-pixel flicker at the hand-off. */
+      .section-reveal--rising {
+        min-height: calc(100vh + 0.5rem);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        /* Belt and braces — JS already skips all setup under reduced motion. */
+        [data-section-reveal] {
+          transform: none !important;
+          clip-path: none !important;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <nav class="demo-nav" aria-label="Demo shortcuts">
+      <a href="#under">Anchor → curtain-revealed section</a>
+      <a href="#expand-a">Anchor → expanding section</a>
+      <a href="#tall">Anchor → tall section</a>
+      <a href="#intro">Top</a>
+    </nav>
+
+    <!-- Feel tuning. Playground-only chrome: it writes to TUNING and nothing
+         else reads these controls. -->
+    <aside class="demo-tuner" aria-label="Feel tuning">
+      <label>
+        <span>Lenis lerp <output data-tuner-out="lenisLerp">0.08</output></span>
+        <input
+          type="range"
+          min="0.03"
+          max="0.3"
+          step="0.01"
+          value="0.08"
+          data-tuner="lenisLerp"
+        />
+        <small>Lower = floatier and laggier. 0.08 = the live site.</small>
+      </label>
+      <label>
+        <span
+          >Expand scrub <output data-tuner-out="expandScrub">1.5</output>s</span
+        >
+        <input
+          type="range"
+          min="0"
+          max="2"
+          step="0.05"
+          value="1.5"
+          data-tuner="expandScrub"
+        />
+        <small>Trailing on the clip-path only. 0 = locked to scroll.</small>
+      </label>
+      <p class="demo-tuner_note">
+        The curtain is deliberately not tunable — it has to track scroll 1:1.
+      </p>
+    </aside>
+
+    <main data-component="section-reveal">
+      <!-- Plain section, no attribute: must be left completely untouched -->
+      <section class="is-intro" id="intro">
+        <div class="padding-global">
+          <div class="container-large section-reveal_content">
+            <p class="eyebrow">Playground</p>
+            <h1>Section reveal</h1>
+            <p>
+              Scroll down. Curtain, expand, expand chained, a curtain taller
+              than the viewport, and plain sections the component must not
+              touch. Open the console for the guard warnings.
+            </p>
+            <a class="button" href="#under">Skip to the reveal</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Variant 1: this section is the curtain. It lifts away and uncovers the next one -->
+      <section
+        class="is-curtain-bg"
+        id="curtain"
+        data-section-reveal="curtain"
+        data-section-reveal-parallax="0.3"
+      >
+        <div class="section-reveal_media">
+          <img
+            src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1920&q=70"
+            alt="Crowd under coloured festival lights"
+            data-section-reveal-media
+            loading="eager"
+            fetchpriority="high"
+          />
+        </div>
+        <div class="padding-global">
+          <div class="container-large section-reveal_content">
+            <p class="eyebrow">Variant — curtain</p>
+            <h2>This one lifts away</h2>
+            <p>
+              It travels up out of the viewport while the section underneath is
+              held perfectly still, so that one reads as being uncovered rather
+              than scrolled past. The photo behind drifts up slower than the
+              curtain carrying it.
+            </p>
+            <a class="button" href="#expand-a">A focusable control</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Uncovered by the curtain above, then the base the next section rises over -->
+      <section class="is-under" id="under">
+        <div class="padding-global">
+          <div class="container-large section-reveal_content">
+            <p class="eyebrow">Uncovered</p>
+            <h2>Held still underneath</h2>
+            <p>
+              While the curtain travels, this section does not move a pixel. The
+              moment the curtain has cleared the screen it is released and
+              carries on with the normal document scroll.
+            </p>
+            <a class="button" href="#tall">Another focusable control</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Variant 2: the previous section stays pinned. This one rises over it and expands -->
+      <section
+        class="is-expand-a"
+        id="expand-a"
+        data-section-reveal="expand"
+        data-section-reveal-inset="5"
+        data-section-reveal-radius="2"
+      >
+        <div class="padding-global">
+          <div class="container-large section-reveal_content">
+            <p class="eyebrow">Variant — expand</p>
+            <h2>Rises in narrower</h2>
+            <p>
+              It enters clipped in from both sides with a corner radius and
+              grows to full-bleed with the radius flattening out, reaching the
+              edges exactly as its scroll stretch ends. While it is clipped you
+              can see the pinned section behind it down either flank.
+            </p>
+            <a class="button" href="#expand-b">Third focusable control</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Chained: an expand right after another expand must work too -->
+      <section
+        class="is-expand-b"
+        id="expand-b"
+        data-section-reveal="expand"
+        data-section-reveal-inset="8"
+        data-section-reveal-radius="3"
+        data-section-reveal-distance="1.5"
+      >
+        <div class="padding-global">
+          <div class="container-large section-reveal_content">
+            <div>
+              <p class="eyebrow">Variant — expand, chained</p>
+              <h2>And again, deeper</h2>
+              <p>
+                A second expand straight after the first, with a wider inset, a
+                larger radius and a reveal stretched over 1.5 viewports — so it
+                is 150vh tall, since a reveal can never outlast its own
+                section's height. No manual z-index anywhere: the ladder is
+                built per pair at runtime.
+              </p>
+            </div>
+            <a class="button" href="#tall">Fourth focusable control</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Curtain taller than the viewport: the reveal is measured off its own
+           height, so all of it scrolls through and nothing stays unreachable -->
+      <section class="is-under is-tall" id="tall" data-section-reveal="curtain">
+        <div class="padding-global">
+          <div class="container-large section-reveal_content">
+            <div>
+              <p class="eyebrow">Edge case — taller than the viewport</p>
+              <h2>Almost two screens tall</h2>
+              <p>
+                This section is the curtain for the one below and is also ~190vh
+                tall. Its reveal runs over its own height rather than a flat
+                viewport, so every line of it passes through the screen.
+              </p>
+            </div>
+            <p>
+              Bottom of the tall section — reachable, and the reveal of the next
+              one only starts once this is the last screenful.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Uncovered by the tall curtain -->
+      <section class="is-plain" id="outro">
+        <div class="padding-global">
+          <div class="container-large section-reveal_content">
+            <p class="eyebrow">Plain section</p>
+            <h2>No attribute, untouched</h2>
+            <p>
+              This one carries no data-section-reveal of its own, so the
+              component only ever treats it as the thing being uncovered.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Edge case: a curtain with nothing after it → warn and skip -->
+      <section
+        class="is-curtain-bg"
+        id="orphan-curtain"
+        data-section-reveal="curtain"
+        data-section-reveal-distance="2"
+      >
+        <div class="padding-global">
+          <div class="container-large section-reveal_content">
+            <p class="eyebrow">Edge case — no next sibling</p>
+            <h2>Skipped, with a warning</h2>
+            <p>
+              Nothing follows this section, so there is nothing to uncover. It
+              also carries data-section-reveal-distance, which a curtain cannot
+              honour. Two console warnings, no thrown error, section left in
+              normal flow.
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Second instance of the component on the same page. Its first child is
+         an expand with no previous sibling → warn and skip. -->
+    <div data-component="section-reveal">
+      <section
+        class="is-expand-a"
+        id="orphan-expand"
+        data-section-reveal="expand"
+      >
+        <div class="padding-global">
+          <div class="container-large section-reveal_content">
+            <p class="eyebrow">Second instance — no previous sibling</p>
+            <h2>Also skipped</h2>
+            <p>
+              A separate component instance, whose first section is an expand
+              with nothing to rise over. Warns and stays in flow, while the pair
+              below it in the same instance still works.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="is-curtain-bg" data-section-reveal="curtain">
+        <div class="padding-global">
+          <div class="container-large section-reveal_content">
+            <p class="eyebrow">Second instance — curtain</p>
+            <h2>Working pair, second instance</h2>
+            <p>
+              Proof that a second wrapper on the same page builds its own pairs
+              and its own local stacking ladder.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="is-plain">
+        <div class="padding-global">
+          <div class="container-large section-reveal_content">
+            <p class="eyebrow">The end</p>
+            <h2>Uncovered, and done</h2>
+            <p>Scroll back up — resize, then back again. No residue.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      /*
+      Component: section-reveal (playground)
+      Webflow attribute: data-component="section-reveal"
+
+      Two scroll-driven reveal variants, per section, via data-section-reveal:
+
+      - curtain: the marked section IS the curtain. Natural document scroll
+        carries it up out of the viewport while its next sibling is held still
+        underneath, so that sibling reads as being uncovered.
+      - expand: the previous sibling is pinned and held still while the marked
+        section rises over it on natural scroll, entering clipped in from the
+        sides with a corner radius and growing to full-bleed in the same stretch.
+
+      Neither variant animates the section that is *perceived* as still — that
+      is what makes them read differently. See the geometry notes on each build
+      function.
+
+      GSAP + ScrollTrigger and Lenis are expected globally (CDN in Webflow /
+      global.js on the site) — nothing is bundled here.
+      */
+
+      const DEBUG = false
+
+      const COMPONENT = '[data-component="section-reveal"]'
+      const SECTION = '[data-section-reveal]'
+      const MEDIA = '[data-section-reveal-media]'
+
+      const DEFAULT_INSET = 5 // % clipped per side when an expand enters
+      const DEFAULT_RADIUS = 2 // rem of corner radius when an expand enters
+      const DEFAULT_DISTANCE = 1 // expand reveal length, in viewports
+
+      // Fraction of an expand's pin reserved after the clip-path has finished,
+      // so a trailing playhead (TUNING.expandScrub) is normally done growing
+      // well before the pin releases.
+      //
+      // It cannot be a guarantee on its own, and no fixed value can be: the
+      // playhead's lag in scroll distance is roughly velocity × scrub, so a
+      // fast flick at scrub 1.5 falls further behind than the whole range is
+      // long. Widening the tail past this only steals scroll from the growth
+      // and starts reading as a dead patch at the end of the reveal. The hard
+      // guarantee is the onLeave in buildExpand — this just keeps it from
+      // having anything to do at ordinary scroll speeds.
+      const CLIP_TAIL = 0.15
+
+      // Feel, live-tunable from the panel at the bottom of the page. These are
+      // the two independent axes of "how the scroll feels":
+      //
+      // - lenisLerp: how heavily the scroll position itself is smoothed. Lower
+      //   is floatier and laggier, higher is tighter and more literal. 0.08
+      //   matches global.js on the live site, so that is the baseline here.
+      // - expandScrub: how much the expand's clip-path playhead trails the
+      //   scroll (seconds to catch up). 0 = locked to the scroll position.
+      //   Only the expand gets this knob — see buildCurtain for why the curtain
+      //   can never have it.
+      const TUNING = {
+        lenisLerp: 0.08,
+        expandScrub: 1.5,
+      }
+
+      // State classes. The CSS keys the min-height requirement off these; the
+      // stacking ladder is written by GSAP so the context can revert it.
+      const CLASS = {
+        curtain: 'section-reveal--curtain',
+        held: 'section-reveal--held',
+        rising: 'section-reveal--rising',
+        pinned: 'section-reveal--pinned',
+      }
+
+      initLenis()
+      initAnchors()
+      initSectionReveal()
+      initTuner()
+
+      function initLenis() {
+        const { gsap, ScrollTrigger, Lenis } = window
+        if (!Lenis || !gsap || !ScrollTrigger) return
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+          return
+
+        gsap.registerPlugin(ScrollTrigger)
+
+        // autoRaf: false — GSAP's ticker drives Lenis, so the smoothed scroll
+        // position, ScrollTrigger and every tween advance on the same frame.
+        const lenis = new Lenis({
+          lerp: TUNING.lenisLerp,
+          smoothWheel: true,
+          autoRaf: false,
+        })
+        window.lenis = lenis
+
+        // Lenis scrolls the window itself, so ScrollTrigger keeps reading
+        // window.scrollY — no scrollerProxy needed, just the update ping.
+        lenis.on('scroll', ScrollTrigger.update)
+        gsap.ticker.add((time) => lenis.raf(time * 1000))
+        gsap.ticker.lagSmoothing(0)
+      }
+
+      function initSectionReveal() {
+        const { gsap, ScrollTrigger } = window
+
+        if (!gsap || !ScrollTrigger) {
+          console.warn(
+            '[section-reveal] GSAP or ScrollTrigger not found on window — skipping.'
+          )
+          return
+        }
+
+        const components = document.querySelectorAll(COMPONENT)
+        if (!components.length) return
+
+        gsap.registerPlugin(ScrollTrigger)
+
+        const mm = gsap.matchMedia()
+
+        mm.add(
+          '(min-width: 992px) and (prefers-reduced-motion: no-preference)',
+          () => {
+            const cleanups = []
+
+            components.forEach((wrapper) => {
+              // Pairs are resolved for the whole wrapper before a single
+              // ScrollTrigger exists: creating a pin wraps its target in a
+              // .pin-spacer div, which would otherwise sit between two
+              // sections and break the sibling lookup of every later pair.
+              const pairs = resolvePairs(wrapper)
+              if (!pairs.length) return
+
+              applyStackingLadder(pairs)
+
+              pairs.forEach((pair) => {
+                const build =
+                  pair.variant === 'curtain' ? buildCurtain : buildExpand
+                cleanups.push(build(pair))
+              })
+            })
+
+            // matchMedia reverts every tween, gsap.set and ScrollTrigger made
+            // in here. The classes and refresh listeners are ours to undo.
+            return () => cleanups.forEach((fn) => fn())
+          }
+        )
+
+        // Images and fonts settle the final page height after DOMContentLoaded,
+        // which moves every start/end position on the page.
+        window.addEventListener('load', () => {
+          if (window.lenis) window.lenis.resize()
+          ScrollTrigger.refresh()
+        })
+      }
+
+      // ── Pair resolution ──────────────────────────────────────────────────
+
+      function resolvePairs(wrapper) {
+        const sections = Array.from(wrapper.querySelectorAll(SECTION)).filter(
+          // A nested instance owns its own sections.
+          (section) => section.closest(COMPONENT) === wrapper
+        )
+
+        const pairs = []
+
+        sections.forEach((section) => {
+          const variant = section.getAttribute('data-section-reveal')
+
+          if (variant !== 'curtain' && variant !== 'expand') {
+            console.warn(
+              `[section-reveal] Unknown variant "${variant}" — skipping.`,
+              section
+            )
+            return
+          }
+
+          const partner =
+            variant === 'curtain'
+              ? siblingSection(section, 'next')
+              : siblingSection(section, 'previous')
+
+          if (!partner) {
+            console.warn(
+              variant === 'curtain'
+                ? '[section-reveal] curtain has no next sibling to uncover — skipping.'
+                : '[section-reveal] expand has no previous sibling to rise over — skipping.',
+              section
+            )
+            return
+          }
+
+          if (
+            variant === 'curtain' &&
+            section.hasAttribute('data-section-reveal-distance')
+          ) {
+            // A curtain leaves on natural document scroll at 1:1, and the
+            // section underneath has to land back in flow exactly as the
+            // curtain clears. That fixes the reveal length at the curtain's own
+            // height — any other value leaves the held section permanently
+            // offset. Change the section's height to change the length.
+            console.warn(
+              '[section-reveal] data-section-reveal-distance is ignored on a curtain (its length is its own height) — remove it.',
+              section
+            )
+          }
+
+          warnIfSeeThrough(section)
+          warnIfSeeThrough(partner)
+
+          pairs.push({
+            section,
+            partner,
+            variant,
+            index: sections.indexOf(section),
+          })
+        })
+
+        return pairs
+      }
+
+      function siblingSection(section, direction) {
+        let sibling =
+          direction === 'next'
+            ? section.nextElementSibling
+            : section.previousElementSibling
+
+        while (sibling) {
+          // Walk through a ScrollTrigger pin-spacer to the section inside it,
+          // so a rebuild after resize resolves the same pairs as the first run.
+          const candidate = sibling.classList.contains('pin-spacer')
+            ? sibling.querySelector(SECTION) || sibling.querySelector('section')
+            : sibling
+
+          if (candidate && candidate.tagName === 'SECTION') return candidate
+
+          sibling =
+            direction === 'next'
+              ? sibling.nextElementSibling
+              : sibling.previousElementSibling
+        }
+
+        return null
+      }
+
+      // Every reveal overlaps two sections, so the one in front must paint over
+      // the one behind. A curtain needs to be above the section *after* it,
+      // which is the opposite of the DOM's natural paint order, so the ladder
+      // can't be a fixed pair of z-index values — chains like curtain → curtain
+      // → plain would contradict themselves. Instead each pair contributes one
+      // "must be above" constraint and the values are relaxed until they all
+      // hold. Written with gsap.set so the matchMedia context reverts them.
+      function applyStackingLadder(pairs) {
+        const { gsap } = window
+        const levels = new Map()
+        const level = (el) => levels.get(el) || 0
+
+        pairs.forEach(({ section, partner }) => {
+          levels.set(section, 0)
+          levels.set(partner, 0)
+        })
+
+        for (let pass = 0; pass < pairs.length + 1; pass++) {
+          let changed = false
+
+          pairs.forEach(({ section, partner }) => {
+            // In both variants the marked section is the one in front.
+            if (level(section) <= level(partner)) {
+              levels.set(section, level(partner) + 1)
+              changed = true
+            }
+          })
+
+          if (!changed) break
+        }
+
+        levels.forEach((value, element) => {
+          gsap.set(element, { zIndex: value + 1 })
+        })
+      }
+
+      // ── Variant: curtain ─────────────────────────────────────────────────
+      //
+      // Geometry: at the start the curtain (height H) covers the viewport and
+      // the section underneath sits H below the top of the screen. Natural
+      // scroll already carries the curtain up and off over exactly H, so the
+      // curtain itself needs no animation at all — what needs animating is the
+      // section underneath, which is translated up by H and released back to 0
+      // over the same H. That keeps its on-screen position at the top of the
+      // viewport for the whole reveal (perceived: dead still) and lands it
+      // exactly in its natural flow position as the curtain clears, so there is
+      // nothing to unwind afterwards.
+      //
+      // No pin, therefore no pinSpacing: the reveal consumes the curtain's own
+      // scroll length, the document height never changes, and there is no pin
+      // hand-off frame where a gap could flash.
+      function buildCurtain({ section, partner }) {
+        const { gsap, ScrollTrigger } = window
+        const travel = () => section.offsetHeight
+
+        section.classList.add(CLASS.curtain)
+        partner.classList.add(CLASS.held)
+
+        gsap.set(partner, { willChange: 'transform' })
+
+        const media = parallaxMedia(section)
+        const setHeld = gsap.quickSetter(partner, 'y', 'px')
+        const setMedia = media
+          ? gsap.quickSetter(media.element, 'y', 'px')
+          : null
+
+        let trigger = null
+
+        // Driven by hand off the trigger's progress rather than by a scrubbed
+        // tween, for one reason: outside the reveal the held section has to be
+        // left completely untransformed.
+        //
+        // A scrubbed tween cannot do that. It parks at progress 0 — the full -H
+        // offset — for the entire page above the reveal, and that resting
+        // transform is poison. It lands in every getBoundingClientRect() taken
+        // of this section, and a section that is measured while displaced and
+        // then pinned by a later pair (an expand using it as its base, which is
+        // exactly what a curtain → expand chain does) gets pinned a section
+        // height off screen. Zeroing it during refreshes is not enough either:
+        // each ScrollTrigger measures its pin once when it is *created*, before
+        // any refresh has happened.
+        //
+        // Held at 0 above the reveal, this section sits in flow below a curtain
+        // that covers the screen, so it is out of sight there. Which is why the
+        // jump to -H on the activating frame costs nothing: hidden below the
+        // fold before it, hidden behind the curtain after it.
+        //
+        // The parallax is the opposite case — the curtain carrying it is on
+        // screen the whole way in — so the media tracks the clamped progress
+        // continuously and never gets reset.
+        const render = () => {
+          const progress = trigger ? trigger.progress : 0
+          setHeld(trigger && trigger.isActive ? -travel() * (1 - progress) : 0)
+          if (setMedia) setMedia(-media.travel() * (1 - progress))
+        }
+
+        // No scrub, by construction: progress read straight off the scroll
+        // position is as 1:1 as it gets. The whole illusion is that this
+        // section is nailed to the top of the viewport, and any catch-up
+        // smoothing would let it drift with scroll velocity — a section that
+        // visibly wobbles instead of sitting still is the one thing this
+        // variant cannot afford.
+        trigger = ScrollTrigger.create({
+          trigger: section,
+          start: 'top top',
+          end: () => `+=${travel()}`,
+          onUpdate: render,
+          onToggle: render,
+          markers: DEBUG,
+        })
+
+        // A resize mid-reveal still has to measure clean, so the transform is
+        // dropped for the duration of a refresh. Restored on the global
+        // `refresh` event rather than this trigger's own callback, because that
+        // one fires while later pairs have yet to measure their pins.
+        const zeroHeld = () => setHeld(0)
+        ScrollTrigger.addEventListener('refreshInit', zeroHeld)
+        ScrollTrigger.addEventListener('refresh', render)
+
+        render()
+
+        return () => {
+          ScrollTrigger.removeEventListener('refreshInit', zeroHeld)
+          ScrollTrigger.removeEventListener('refresh', render)
+          section.classList.remove(CLASS.curtain)
+          partner.classList.remove(CLASS.held)
+          // quickSetter writes bypass the tween system, so the matchMedia
+          // context has no record of them to revert — they are cleared here.
+          gsap.set(partner, { clearProps: 'transform,willChange' })
+          if (media) media.reset()
+        }
+      }
+
+      // ── Variant: expand ──────────────────────────────────────────────────
+      //
+      // Geometry: the reveal starts as the section's top crosses the bottom of
+      // the viewport, so natural scroll already lifts it from the bottom edge
+      // to the top over exactly one viewport — the rise needs no animation
+      // either. Pinning the previous section at that moment freezes it right
+      // where the reader left it (its bottom on the bottom edge, so the screen
+      // stays covered) and holds it still while this one climbs over it.
+      // The only thing tweened is the clip-path, so the entry width and the
+      // corner radius resolve over the same single stretch of scroll.
+      //
+      // pinSpacing: false — the pin must not add scroll length. The rise is
+      // paid for by the section's own natural travel; a spacer would insert a
+      // viewport of extra scroll on top of it and stall the page.
+      //
+      // The pinned section snaps back into flow when the pin releases, one
+      // viewport higher than where it was frozen — unavoidable: holding
+      // something still while the page scrolls under it always ends in a
+      // snap. It is invisible only while this section is covering the screen
+      // *and* has finished growing, which is what the CSS half-rem overshoot
+      // and the CLIP_TAIL below exist to guarantee. Get either wrong and the
+      // base is seen jumping, through the flanks or through a sliver at the top.
+      function buildExpand({ section, partner }) {
+        const { gsap } = window
+
+        section.classList.add(CLASS.rising)
+        partner.classList.add(CLASS.pinned)
+
+        const inset = numberAttr(
+          section,
+          'data-section-reveal-inset',
+          DEFAULT_INSET
+        )
+        const radius = numberAttr(
+          section,
+          'data-section-reveal-radius',
+          DEFAULT_RADIUS
+        )
+        const distance = numberAttr(
+          section,
+          'data-section-reveal-distance',
+          DEFAULT_DISTANCE
+        )
+
+        const media = parallaxMedia(section)
+
+        // How long the base stays pinned. Both ends are clamped rather than
+        // trusted, because either one going wrong shows the base snapping:
+        //
+        // - under a viewport, and the pin releases while the base is still on
+        //   screen, so it snaps back into flow in full view;
+        // - over this section's own height, and this section has climbed past
+        //   the top by then, uncovering the strip below it.
+        const pinLength = () => {
+          const viewport = window.innerHeight
+          return Math.min(
+            Math.max(distance * viewport, viewport),
+            section.offsetHeight
+          )
+        }
+
+        if (distance !== DEFAULT_DISTANCE) {
+          const requested = distance * window.innerHeight
+          if (Math.abs(requested - pinLength()) > 1) {
+            console.warn(
+              `[section-reveal] data-section-reveal-distance="${distance}" was clamped to ${(
+                pinLength() / window.innerHeight
+              ).toFixed(
+                2
+              )} viewports — it cannot be under 1, or over this section's own height (make the section taller to allow a longer reveal).`,
+              section
+            )
+          }
+        }
+
+        // Unlike the curtain, nothing here has to sit still against the
+        // viewport — the base is held by the pin, not by a transform — so the
+        // clip-path playhead is free to trail the scroll. See TUNING.expandScrub.
+        //
+        // That trailing is exactly why the clip does not get the whole pin: a
+        // lagging playhead would still be finishing the growth as the pin lets
+        // go, and a section that is still inset at that moment shows the base
+        // snapping through its own flanks. So the clip is mapped to the first
+        // part of the pin and the rest is dead scroll for the playhead to catch
+        // up in — full-bleed is reached before the hand-off, never after it.
+        //
+        // No anticipatePin: it exists to stop the pin flashing when the scroll
+        // arrives faster than a frame, which Lenis already prevents by
+        // smoothing velocity. Kept off, because pinning a frame early is itself
+        // felt as a hitch right at the hand-off.
+        const tl = gsap.timeline({
+          defaults: { ease: 'none' },
+          scrollTrigger: {
+            trigger: section,
+            start: 'top bottom',
+            end: () => `+=${pinLength()}`,
+            scrub: TUNING.expandScrub || true,
+            pin: partner,
+            pinSpacing: false,
+            invalidateOnRefresh: true,
+            markers: DEBUG,
+            // The hard guarantee behind CLIP_TAIL. The base becomes visible
+            // again the instant the pin releases, and the only thing that can
+            // show it is this section's own clip flanks — so the growth must be
+            // finished by then, whatever the scrub is doing. Completing the
+            // scrub's own catch-up tween is what lands it, rather than setting
+            // the timeline directly: that tween is what drives the playhead and
+            // would drag it straight back on the next tick.
+            //
+            // Only felt on a fast flick, where the last sliver of growth
+            // resolves at once — at a normal reading pace the tail has already
+            // finished it and there is nothing left to snap.
+            onLeave: (self) => {
+              const scrubTween = self.getTween && self.getTween()
+              if (scrubTween) scrubTween.progress(1)
+              else tl.progress(1)
+            },
+          },
+        })
+
+        // The base flips from static to position: fixed the instant the pin
+        // engages. Promoting it up front keeps it on its own layer across that
+        // switch, so the hand-off costs a composite instead of a repaint.
+        gsap.set(partner, { willChange: 'transform' })
+
+        // Growth is clip-path, never width + border-radius: no layout work per
+        // frame, the radius rides along in the same property, and the content
+        // inside never reflows while the section grows.
+        //
+        // clip-path is a paint-level property though, so a full-viewport
+        // section repaints on every frame of the reveal. will-change hints the
+        // browser to keep it on its own layer and prepare for exactly that —
+        // this is the one place worth watching in the Performance panel.
+        gsap.set(section, { willChange: 'clip-path' })
+        tl.fromTo(
+          section,
+          { clipPath: `inset(0% ${inset}% 0% ${inset}% round ${radius}rem)` },
+          { clipPath: 'inset(0% 0% 0% 0% round 0rem)', duration: 1 },
+          0
+        )
+
+        // The catch-up tail. ScrollTrigger maps the pin range onto the whole
+        // timeline, so padding the timeline past the clip is what reserves that
+        // last slice of scroll as dead time. The parallax spans everything,
+        // since the section keeps travelling for all of it.
+        if (media) {
+          tl.fromTo(
+            media.element,
+            { y: () => -media.travel() },
+            { y: 0, duration: 1 + CLIP_TAIL },
+            0
+          )
+        }
+        tl.to({}, { duration: CLIP_TAIL })
+
+        return () => {
+          section.classList.remove(CLASS.rising)
+          partner.classList.remove(CLASS.pinned)
+          gsap.set(section, { clearProps: 'clipPath,willChange' })
+          gsap.set(partner, { clearProps: 'willChange' })
+          if (media) media.reset()
+        }
+      }
+
+      // ── Helpers ──────────────────────────────────────────────────────────
+
+      // Parallax is opt-in. The media is made taller than its box by the given
+      // fraction and starts bottom-aligned, so drifting to top-aligned over the
+      // reveal moves it down relative to the section — i.e. it travels up
+      // slower than the section carrying it. Height is written once, never per
+      // frame; only the transform animates.
+      function parallaxMedia(section) {
+        if (!section.hasAttribute('data-section-reveal-parallax')) return null
+
+        const amount = numberAttr(section, 'data-section-reveal-parallax', 0)
+        if (amount <= 0) return null
+
+        const element = section.querySelector(MEDIA)
+        if (!element) {
+          console.warn(
+            '[section-reveal] parallax is set but no [data-section-reveal-media] was found — skipping parallax.',
+            section
+          )
+          return null
+        }
+
+        const { gsap } = window
+        gsap.set(element, {
+          height: `${(1 + amount) * 100}%`,
+          willChange: 'transform',
+        })
+
+        return {
+          element,
+          // How far the media overflows its box, which is exactly its parallax
+          // travel. Derived from the element's own height so this never has to
+          // reach for the container and tie itself to the markup's nesting.
+          travel: () => element.offsetHeight * (amount / (1 + amount)),
+          reset: () =>
+            gsap.set(element, {
+              clearProps: 'height,transform,willChange',
+            }),
+        }
+      }
+
+      function numberAttr(element, attribute, fallback) {
+        if (!element.hasAttribute(attribute)) return fallback
+        const value = parseFloat(element.getAttribute(attribute))
+        return Number.isFinite(value) ? value : fallback
+      }
+
+      // Both variants overlap two sections, so a see-through one lets the page
+      // background show through mid-reveal — the classic stray band. Cheap
+      // guard: warn once at init rather than let it surface as a visual bug.
+      function warnIfSeeThrough(section) {
+        const style = getComputedStyle(section)
+        const transparent =
+          style.backgroundImage === 'none' &&
+          /^(transparent|rgba\(0,\s*0,\s*0,\s*0\))$/.test(style.backgroundColor)
+
+        if (transparent && !section.querySelector(MEDIA)) {
+          console.warn(
+            '[section-reveal] this section has no background of its own — the page background will show through during the reveal.',
+            section
+          )
+        }
+      }
+
+      // ── Feel tuning (playground only) ────────────────────────────────────
+
+      function initTuner() {
+        const { gsap, ScrollTrigger } = window
+        const panel = document.querySelector('.demo-tuner')
+        if (!panel || !gsap) return
+
+        panel.querySelectorAll('[data-tuner]').forEach((input) => {
+          const key = input.getAttribute('data-tuner')
+          const output = panel.querySelector(`[data-tuner-out="${key}"]`)
+
+          input.value = TUNING[key]
+          if (output) output.textContent = input.value
+
+          input.addEventListener('input', () => {
+            TUNING[key] = parseFloat(input.value)
+            if (output) output.textContent = input.value
+
+            // Lenis reads its options object live, so lerp costs nothing.
+            if (key === 'lenisLerp' && window.lenis) {
+              window.lenis.options.lerp = TUNING[key]
+            }
+          })
+
+          // scrub is baked into a ScrollTrigger when it is created, so it only
+          // takes effect on a rebuild — done on release rather than on every
+          // tick of the drag.
+          input.addEventListener('change', () => {
+            if (key !== 'expandScrub') return
+            gsap.matchMediaRefresh()
+            ScrollTrigger.refresh()
+          })
+        })
+      }
+
+      // ── Anchor links ─────────────────────────────────────────────────────
+      //
+      // Mirrors the site's global.js handler, with one difference that matters
+      // here: the destination is measured from offsetTop rather than
+      // getBoundingClientRect(). A curtain's held section carries a resting
+      // transform while the page is above its reveal, and a rect-based
+      // measurement would fold that transform into the target and land a whole
+      // section short. offsetTop ignores transforms, so an anchor always lands
+      // on the section's real place in the document — for a held section, that
+      // is the frame its reveal completes on.
+      function initAnchors() {
+        document.addEventListener(
+          'click',
+          (event) => {
+            const link = event.target.closest('a[href^="#"]')
+            if (!link || link.getAttribute('href') === '#') return
+
+            const target = document.querySelector(link.getAttribute('href'))
+            if (!target) return
+
+            event.preventDefault()
+            event.stopPropagation()
+
+            const nav = document.querySelector('.demo-nav')
+            const top = documentTop(target) - (nav ? nav.offsetHeight : 0)
+            const immediate = document.readyState !== 'complete'
+
+            if (window.lenis) {
+              window.lenis.scrollTo(top, { immediate })
+            } else {
+              window.scrollTo({ top, behavior: immediate ? 'auto' : 'smooth' })
+            }
+          },
+          { capture: true }
+        )
+      }
+
+      function documentTop(element) {
+        let top = 0
+        let node = element
+        while (node) {
+          top += node.offsetTop
+          node = node.offsetParent
+        }
+        return top
+      }
+    </script>
+  </body>
+</html>

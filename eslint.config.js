@@ -19,6 +19,7 @@ export default [
         requestAnimationFrame: 'readonly',
         cancelAnimationFrame: 'readonly',
         getComputedStyle: 'readonly',
+        ResizeObserver: 'readonly',
       },
     },
   },

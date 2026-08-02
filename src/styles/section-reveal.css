@@ -1,0 +1,60 @@
+/*
+section-reveal — structural CSS
+
+Nothing here does anything until the JS adds a state class, so with JS off (or
+under reduced motion, or below 992px) every section stays in normal flow, in
+order, fully readable. Everything visual stays in Webflow.
+*/
+
+/* Keeps the z-index ladder the JS builds for the reveal pairs local to this
+   component — the rest of the page never has to know about it. */
+[data-component='section-reveal'] {
+  isolation: isolate;
+}
+
+[data-section-reveal] {
+  position: relative;
+}
+
+/* position: relative — a partner section may carry no data-section-reveal of its
+   own, and z-index is inert on a static element, so the stacking ladder would
+   silently do nothing for it.
+
+   min-height — both variants only stay gap-free while every section involved is
+   at least a viewport tall: the curtain has to cover the screen on its own, and
+   the section underneath has to still cover it once the curtain is gone. A
+   requirement of the effect, not a style choice. */
+.section-reveal--curtain,
+.section-reveal--held,
+.section-reveal--rising,
+.section-reveal--base {
+  position: relative;
+  min-height: 100vh;
+}
+
+/* Half a rem over a viewport, on purpose. A rising section has to be covering
+   the screen when the hold under it releases, and an exact fit leaves no margin:
+   Lenis scrolls in fractional pixels, so an exact-fit section can sit half a
+   pixel low and let a sliver of the base be seen snapping. The overshoot is
+   invisible and removes the whole class of one-pixel flicker at the hand-off. */
+.section-reveal--rising {
+  min-height: calc(100vh + 0.5rem);
+}
+
+/* Parallax only. The JS makes the media taller than its box, so it has to fill
+   and crop rather than stretch — and only where parallax was asked for, leaving
+   any other media in a reveal section exactly as Webflow set it up. The wrapper
+   still needs overflow: hidden in Webflow; the JS warns if it does not have it. */
+[data-section-reveal-parallax] [data-section-reveal-media] {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Belt and braces — the JS already skips all setup under reduced motion. */
+  [data-section-reveal] {
+    transform: none !important;
+    clip-path: none !important;
+  }
+}
