@@ -1,37 +1,79 @@
 /* footer reveal — pure-CSS sticky curtain (no ScrollTrigger pin, so it never
-   fights Lenis). The image sits above the footer as a full-screen curtain and
-   lifts away while the footer stays pinned underneath, uncovering it from the
-   bottom up. Almost all of the curtain goes: it stops with only --footer-strip
-   of itself still on screen — exactly the viewport's leftover above the footer —
-   so the page ends on the whole footer visible at once with a band of image
-   above it, and the footer never takes the full viewport.
+   fights Lenis). The image sits above the footer as a curtain and lifts away
+   while the footer stays pinned underneath, uncovering it from the top down.
+   Almost all of the curtain goes: it stops with only --footer-strip of itself
+   still on screen, so the page ends on the whole footer visible at once with a
+   band of image above it, and the footer never takes the full viewport.
 
-   Timeline (V = viewport, S = --footer-strip, H = footer height):
-     lift    scroll 0 → V-S   curtain rises, footer frozen at y = S
-     release scroll V-S → H   curtain parked at S, footer scrolls out normally
+   The curtain is --footer-curtain tall, which by default is the footer's own
+   height rather than a viewport: the size that covers what it has to cover and
+   nothing more. Covering is not what hides the footer though — footer.js clips
+   the footer to the part below the curtain's bottom edge, so it stays hidden at
+   any curtain height and is uncovered as that edge rises.
+
+   Timeline (C = --footer-curtain, L = --footer-leftover, S = --footer-strip,
+   H = footer height, R = --footer-radius):
+     lift    scroll 0 → C-S   curtain rises, footer frozen at y = L
+     release scroll C-S → H   curtain parked at S, footer scrolls out normally
    The footer's bottom lands exactly on the viewport bottom as the page bottoms
    out — no gap and no dead scroll at either end.
 
-   Because S is exactly the viewport's leftover above the footer, the release
+   L is the band of image on screen at rest; S is L + R, because the curtain
+   parks a radius lower than the footer's top edge so its rounded bottom corners
+   overlap it. The curtain paints above the footer, so those two notches show the
+   footer's background rather than a hole.
+
+   Because L is exactly the viewport's leftover above the footer, the release
    phase has zero length whenever the footer fits on screen: the footer is
    uncovered whole and then simply stops, instead of drifting on behind the
    parked curtain (which reads as a bounce). The release only ever runs for a
-   footer taller than the viewport, where S is 0 — the curtain leaves entirely
+   footer taller than the viewport, where L is 0 — the curtain leaves entirely
    and the footer scrolls out normally, so its lower rows stay reachable.
 
    footer.js adds .is-reveal, measures --footer-height, appends the spacer and
    drives the curtain's parallax. */
 
 .footer_section.is-reveal {
-  /* How much of the curtain is still on screen once it stops. Not a style knob —
-     it is exactly the viewport's leftover above the footer, which is what makes
-     the whole footer land visible and flush with the viewport bottom. Any larger
-     and the footer would have to slide on behind the curtain to reach the page
-     bottom, hiding its top rows; any smaller and it would stop short, leaving
-     dead space below. Clamped at 0 for a footer taller than the viewport, where
-     there is no leftover and the curtain leaves completely.
-     The lever for showing more or less image is the footer's own height. */
-  --footer-strip: max(0px, calc(100vh - var(--footer-height, 100vh)));
+  /* ── Knobs ─────────────────────────────────────────────────────────────── */
+
+  /* The curtain's height. Defaults to the footer's own, which is the size that
+     covers it exactly and nothing more — a lid cut to its box. The viewport is
+     the wrong reference: it is bigger than the footer, so 100vh only ever means
+     covering the footer plus a slab of the section above it.
+     Override with any length for a taller or shorter panel. */
+  --footer-image: var(--footer-height, 100vh);
+
+  /* Radius on the curtain's bottom corners. The curtain parks this much further
+     down than the band so the corners overlap the footer, and since the curtain
+     paints above the footer, what shows through the two notches is the footer's
+     own background instead of a gap. */
+  --footer-radius: 1.5rem;
+
+  /* ── Derived — not knobs ───────────────────────────────────────────────── */
+
+  /* The viewport's leftover above the footer, which is what makes the whole
+     footer land visible and flush with the viewport bottom. Any larger and the
+     footer would have to slide on behind the curtain to reach the page bottom,
+     hiding its top rows; any smaller and it would stop short, leaving dead space
+     below. Clamped at 0 for a footer taller than the viewport, where there is no
+     leftover and the curtain leaves completely. */
+  --footer-leftover: max(0px, calc(100vh - var(--footer-height, 100vh)));
+
+  /* No band, no corners to round: with the curtain gone there is nothing to
+     overlap, and rounding it anyway would leave a sliver of image parked on
+     screen for a footer that is meant to fill it. */
+  --footer-applied-radius: min(var(--footer-radius), var(--footer-leftover));
+
+  /* How much of the curtain is still on screen once it stops: the band plus the
+     radius it overlaps the footer by. */
+  --footer-strip: calc(var(--footer-leftover) + var(--footer-applied-radius));
+
+  /* The curtain can never be shorter than the band it has to park showing. Only
+     bites on a footer under half the viewport, where the leftover above it grows
+     taller than the footer itself. Guarding here rather than by forcing the
+     footer taller keeps the footer's own layout out of it — and would otherwise
+     feed back into --footer-height, which is measured from that same height. */
+  --footer-curtain: max(var(--footer-image), var(--footer-strip));
 
   position: relative;
   display: flex;
@@ -44,14 +86,26 @@
 
 /* Curtain: visually first (order -1), full-screen, stacked over the footer.
    The negative sticky top is what parks it with only --footer-strip showing
-   instead of letting it scroll away completely. overflow: hidden clips the
-   oversized image so it can be parallaxed inside. */
+   instead of letting it scroll away completely. overflow: hidden does double
+   duty — it clips the oversized image so it can be parallaxed inside, and it
+   clips it to the rounded bottom corners. */
 .footer_section.is-reveal .footer_image-wrapper {
   order: -1;
   position: sticky;
-  top: calc(var(--footer-strip) - 100vh);
-  height: 100vh;
+  top: calc(var(--footer-strip) - var(--footer-curtain));
+  height: var(--footer-curtain);
   overflow: hidden;
+  /* --footer-live-radius is written by footer.js every frame, growing from 0 to
+     --footer-applied-radius across the lift. The fallback is the full value, so
+     with JS off the corners are simply always rounded. */
+  border-bottom-right-radius: var(
+    --footer-live-radius,
+    var(--footer-applied-radius)
+  );
+  border-bottom-left-radius: var(
+    --footer-live-radius,
+    var(--footer-applied-radius)
+  );
   z-index: 1;
 }
 
@@ -69,13 +123,29 @@
 }
 
 /* Footer: pulled a full curtain-travel up so it starts completely hidden behind
-   the curtain, pinned just under the strip while the curtain lifts, then
+   the curtain, pinned just under the band while the curtain lifts, then
    released. The pin is what makes the curtain read as uncovering it rather than
-   both just scrolling together. */
+   both just scrolling together.
+
+   Held at --footer-leftover rather than --footer-strip, which is the whole point
+   of the two being different: it sits a radius higher than the curtain's bottom
+   edge, so its background is what fills the rounded notches, and its own bottom
+   still lands exactly on the viewport bottom.
+
+   No height is imposed on it: the curtain sizes itself to the footer, not the
+   other way around, so the footer's own layout in Webflow is left alone. */
 .footer_section.is-reveal .footer_component {
   position: sticky;
-  top: var(--footer-strip);
-  margin-top: calc(var(--footer-strip) - 100vh);
+  top: var(--footer-leftover);
+  margin-top: calc(var(--footer-leftover) - var(--footer-curtain));
+  /* What makes this read as a reveal rather than a footer that was always
+     there. Written by footer.js every frame: the footer is clipped to the part
+     below the curtain's bottom edge, and the line rises with the curtain until
+     nothing is clipped at all. A curtain shorter than the screen cannot hide the
+     footer by covering it, so it gets hidden by this instead — and at 100vh the
+     line starts off-screen, which is the old behaviour unchanged.
+     Defaults to 0: with JS off the footer is simply never clipped. */
+  clip-path: inset(var(--footer-wipe, 0px) 0 0 0);
   z-index: 0;
 }
 
@@ -84,6 +154,6 @@
    scroll position, so it is never visible. */
 .footer_section.is-reveal .footer_reveal-spacer {
   flex: 0 0 auto;
-  height: calc(100vh - var(--footer-strip));
+  height: calc(var(--footer-curtain) - var(--footer-strip));
   pointer-events: none;
 }
