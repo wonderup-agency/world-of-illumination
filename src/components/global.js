@@ -76,6 +76,13 @@ function setupAnchorScroll(reducedMotion) {
       const link = event.target.closest('a[href^="#"]')
       if (!link || link.getAttribute('href') === '#') return
 
+      // Webflow's native Tabs widget also uses href="#w-tabs-...-pane-..." on
+      // its tab links to switch panes — not a page anchor to scroll to. Left
+      // alone, our stopPropagation below would block Webflow's own tab-switch
+      // click handling the same way it blocks its dropdown-close handling
+      // (see nested-dropdown-fix.md), leaving tabs stuck/unresponsive.
+      if (link.matches('.w-tab-link')) return
+
       const target = document.querySelector(link.getAttribute('href'))
       if (!target) return
 
