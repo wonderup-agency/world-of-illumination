@@ -42,6 +42,6 @@ Elements matching `[data-component='locations']` must contain:
 
 - `.locations-content .swiper` has `overflow: visible` so side cards peek out
 - The parent section (`section_locations`) should have `overflow: hidden` to clip the bleed — set this in Webflow
-- Slide width is fixed at `440px` in CSS (`280px` at ≤991px, `220px` at ≤479px) — adjust per breakpoint if needed
+- Slide width is fixed at `440px` in CSS (`320px` at ≤991px, `260px` at ≤479px) — adjust per breakpoint if needed
 - If more than one card is flagged `data-locations-new-show="true"`, the first one in CMS order wins (`findIndex` stops at the first match) — keep the "new show" switch exclusive to one item at a time
 - The CMS/Collection List order can stay in its natural default (e.g. by date) — no need to manually sort the flagged item to the front. JS re-centers whichever card is flagged at runtime, regardless of its position in that order.

@@ -32,13 +32,13 @@
 /* Tablet */
 @media (max-width: 991px) {
   .locations-content .swiper-slide {
-    width: 280px;
+    width: 320px;
   }
 }
 
 /* Mobile */
 @media (max-width: 479px) {
   .locations-content .swiper-slide {
-    width: 220px;
+    width: 260px;
   }
 }
