@@ -89,6 +89,11 @@ Load Mapbox GL JS globally via CDN in Webflow (it is not bundled):
   unclustered points are rendered as HTML image markers (the event logo) and
   clusters as HTML bubbles, synced on the map's `render` event. Filtering calls
   `source.setData()` so clusters recompute for the visible subset.
+- **Responsive height**: `[data-tabs-map='map']` height is `min(78vh, 42.5rem)`
+  on desktop, stepped down at smaller breakpoints in `tabs-map-v2.css` —
+  `min(65vh, 32rem)` at ≤991px (Tablet), `min(55vh, 26rem)` at ≤767px (Mobile
+  Landscape/Portrait) — so narrower screens don't get stretched to nearly the
+  same absolute height as desktop despite having far less width.
 
 ## Dependencies
 

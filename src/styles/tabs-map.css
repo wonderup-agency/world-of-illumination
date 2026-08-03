@@ -49,6 +49,20 @@
   height: min(78vh, 42.5rem);
 }
 
+/* Smaller screens have far less width than desktop but were still hitting
+   the same 42.5rem height cap, producing a narrow, overly tall map. Scale
+   the cap down to keep a more square-ish aspect ratio at each breakpoint. */
+@media (max-width: 61.9375rem) {
+  [data-tabs-map='map'] {
+    height: min(65vh, 32rem);
+  }
+}
+@media (max-width: 47.9375rem) {
+  [data-tabs-map='map'] {
+    height: min(55vh, 26rem);
+  }
+}
+
 /* Image marker (unclustered event) */
 .em-marker {
   width: 3rem;
