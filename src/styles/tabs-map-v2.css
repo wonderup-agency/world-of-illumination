@@ -55,6 +55,14 @@
   aspect-ratio: 4 / 3;
   max-height: min(78vh, 42.5rem);
 }
+/* Flat, explicit height on mobile — overrides the aspect-ratio value above
+   with a plain fixed number so the box is unmistakably smaller, regardless
+   of viewport quirks. */
+@media (max-width: 47.9375rem) {
+  [data-tabs-map='map'] {
+    height: 300px;
+  }
+}
 
 /* Image marker (unclustered event) */
 .em-marker {

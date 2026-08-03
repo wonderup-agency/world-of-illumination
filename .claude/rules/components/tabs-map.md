@@ -63,11 +63,11 @@ Load Mapbox GL JS globally via CDN in Webflow (it is not bundled):
   `source.setData()` so clusters recompute for the visible subset.
 - **Responsive height**: `[data-tabs-map='map']` height is driven by
   `aspect-ratio: 4 / 3` on its own rendered width (capped at
-  `min(78vh, 42.5rem)`), not a fixed value — so it stays proportionate at any
-  container width (mobile, tablet, a narrowed desktop window) instead of being
-  forced toward the same absolute height as a full-width desktop layout. The
-  cap only kicks in once a container is wide enough that the aspect-ratio
-  height would exceed the original desktop size.
+  `min(78vh, 42.5rem)`) on tablet/desktop, so it stays proportionate at any
+  container width instead of being forced toward the same absolute height as
+  a full-width desktop layout. On mobile (≤767px) that's overridden with a
+  flat `height: 300px` — a plain fixed number, not relative to width/viewport,
+  so the box is always small there regardless of device quirks.
 
 ## Dependencies
 
