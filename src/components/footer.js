@@ -3,6 +3,7 @@ Component: footer
 Webflow attribute: data-component="footer"
 */
 
+import gsap from 'gsap'
 import '../styles/footer.css'
 
 // Sticky curtain reveal — the geometry lives in footer.css, this feeds it the
@@ -22,6 +23,11 @@ import '../styles/footer.css'
 // No ScrollTrigger / pin, so nothing conflicts with Lenis smooth scroll — Lenis
 // scrolls the window, so the native scroll event drives the parallax (same
 // approach as text-fill.js).
+//
+// Desktop-only (gsap.matchMedia, ≥992px): the sticky/clip-path geometry this
+// relies on doesn't hold up on tablet/mobile viewports and renders broken, so
+// below desktop the footer is left as a plain static section — no .is-reveal
+// class, no spacer, no listeners.
 
 const SPACER_CLASS = 'footer_reveal-spacer'
 
@@ -37,13 +43,6 @@ export default function (elements) {
     const wrapper = section.querySelector('.footer_image-wrapper')
     const content = section.querySelector('.footer_component')
     if (!wrapper || !content) return
-
-    const spacer = document.createElement('div')
-    spacer.className = SPACER_CLASS
-    spacer.setAttribute('aria-hidden', 'true')
-    section.append(spacer)
-
-    section.classList.add('is-reveal')
 
     instances.push({
       section,
@@ -144,13 +143,47 @@ export default function (elements) {
     render()
   }
 
-  sync()
-  window.addEventListener('scroll', onScroll, { passive: true })
-  // Fonts and images settle after DOMContentLoaded and change the footer height.
-  window.addEventListener('load', sync, { once: true })
+  let active = false
+
+  gsap.matchMedia().add('(min-width: 992px)', () => {
+    active = true
+
+    const spacers = instances.map((instance) => {
+      const spacer = document.createElement('div')
+      spacer.className = SPACER_CLASS
+      spacer.setAttribute('aria-hidden', 'true')
+      instance.section.append(spacer)
+      instance.section.classList.add('is-reveal')
+      return spacer
+    })
+
+    sync()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    // Fonts and images settle after DOMContentLoaded and change the footer height.
+    window.addEventListener('load', sync, { once: true })
+
+    // Cleanup when leaving desktop — undo everything init() did above so the
+    // footer falls back to a plain static section.
+    return () => {
+      active = false
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('load', sync)
+      instances.forEach((instance, i) => {
+        instance.section.classList.remove('is-reveal')
+        spacers[i].remove()
+        instance.section.style.removeProperty('--footer-height')
+        instance.wrapper.style.removeProperty('--footer-live-radius')
+        instance.content.style.removeProperty('--footer-wipe')
+        if (instance.image) instance.image.style.transform = ''
+      })
+    }
+  })
 
   return {
-    // Runs on window resize (debounced 150ms)
-    resize: sync,
+    // Runs on window resize (debounced 150ms) — only meaningful while active;
+    // gsap.matchMedia handles enter/leave of the 992px breakpoint itself.
+    resize: () => {
+      if (active) sync()
+    },
   }
 }
