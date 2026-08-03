@@ -42,25 +42,18 @@
 }
 
 /* Map container — sizes itself so it never depends on a positioned parent.
-   Targeted by attribute so it works regardless of the Webflow class name. */
+   Targeted by attribute so it works regardless of the Webflow class name.
+   Height is derived from the container's own rendered width (aspect-ratio)
+   rather than a fixed vh/rem value gated behind a width breakpoint — a fixed
+   height forced narrow containers (mobile, or any narrower desktop window)
+   into a tall, stretched-looking box. aspect-ratio keeps it proportionate at
+   any width; max-height still caps it on short/wide viewports (landscape,
+   large desktop) so it never grows past the original desktop size. */
 [data-tabs-map='map'] {
   position: relative;
   width: 100%;
-  height: min(78vh, 42.5rem);
-}
-
-/* Smaller screens have far less width than desktop but were still hitting
-   the same 42.5rem height cap, producing a narrow, overly tall map. Scale
-   the cap down to keep a more square-ish aspect ratio at each breakpoint. */
-@media (max-width: 61.9375rem) {
-  [data-tabs-map='map'] {
-    height: min(65vh, 32rem);
-  }
-}
-@media (max-width: 47.9375rem) {
-  [data-tabs-map='map'] {
-    height: min(55vh, 26rem);
-  }
+  aspect-ratio: 4 / 3;
+  max-height: min(78vh, 42.5rem);
 }
 
 /* Image marker (unclustered event) */
