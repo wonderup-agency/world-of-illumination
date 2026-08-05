@@ -14,6 +14,10 @@
 
 export default [
   {
+    selector: "[data-component='gallery-slider']",
+    importFn: () => import('./components/gallery-slider.js'),
+  },
+  {
     selector: "[data-component='section-reveal']",
     importFn: () => import('./components/section-reveal.js'),
   },

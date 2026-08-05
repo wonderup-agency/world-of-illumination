@@ -1,0 +1,13 @@
+/* Hides slides until Swiper initializes, to avoid the initial flash */
+[data-component='gallery-slider'] .swiper:not(.swiper-initialized) {
+  overflow: hidden;
+}
+
+[data-component='gallery-slider'] .swiper:not(.swiper-initialized) .swiper-slide {
+  opacity: 0;
+}
+
+/* Once initialized, let centered neighbor slides peek outside the container */
+[data-component='gallery-slider'] .swiper.swiper-initialized {
+  overflow: visible;
+}
