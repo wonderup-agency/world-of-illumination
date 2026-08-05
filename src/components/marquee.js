@@ -28,7 +28,16 @@ export default function (elements) {
       item.cloneNode(true)
     )
 
+    let lastWidth = null
+
     const fill = () => {
+      // Mobile browsers fire `resize` when the address bar shows/hides on
+      // scroll (viewport height changes, width doesn't) — skip the rebuild
+      // in that case so the animation doesn't restart/flicker mid-scroll.
+      const currentWidth = el.offsetWidth
+      if (currentWidth === lastWidth) return
+      lastWidth = currentWidth
+
       track.innerHTML = ''
       baseItems.forEach((item) => track.appendChild(item.cloneNode(true)))
 
