@@ -3,7 +3,9 @@
   overflow: hidden;
 }
 
-[data-component='gallery-slider'] .swiper:not(.swiper-initialized) .swiper-slide {
+[data-component='gallery-slider']
+  .swiper:not(.swiper-initialized)
+  .swiper-slide {
   opacity: 0;
 }
 

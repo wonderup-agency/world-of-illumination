@@ -65,6 +65,7 @@ Components are registered in `src/components.js` as an array of `{ selector, imp
 - PostCSS handles nesting and autoprefixer (stage 2)
 - All CSS extracts to a single `dist/styles.css`
 - No CSS-in-JS, no CSS modules
+- **Avoid bare functional class selectors that could plausibly be reused elsewhere in Webflow** (e.g. a generic Collection Item name like `.show_item`). Every component's CSS bundles sitewide via the same `dist/styles.css`, so a bare selector applies to *any* element with that class on *any* page — including an unrelated Webflow section/Collection List that happens to reuse the name. Scope structural rules (`position`, `display`, `transform`, etc.) under a stable, component-specific ancestor class instead (e.g. `.show_orbit .show_item`, not `.show_item` alone). This bit `location-map` when a new CMS Collection List elsewhere on the site was named `show_item`, silently inheriting `shows.css`'s unscoped `position: absolute` and getting knocked out of the page's layout flow — see [`shows.md`](./components/shows.md).
 
 ## Error Handling
 

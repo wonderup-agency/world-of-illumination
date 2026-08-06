@@ -40,7 +40,7 @@ a `hide` class by hand.
 ## Dependencies
 
 - `gsap` — core (`gsap.to`, `gsap.set`, `gsap.matchMedia`, `gsap.killTweensOf`, `gsap.delayedCall`, `autoAlpha`, `filter`)
-- `src/styles/shows.css` — orbit and item absolute positioning, hides `show_item-featured`
+- `src/styles/shows.css` — orbit and item absolute positioning, hides `show_item-featured`. Both rules are scoped as `.show_orbit .show_item` / `.show_orbit .show_item-featured` (not bare `.show_item`) — **deliberately**, so a future CMS Collection List elsewhere on the site that happens to reuse the `show_item`/`show_item-featured` class names doesn't inherit this component's `position: absolute` and get silently ripped out of the page's normal layout flow. This is exactly what broke the `location-map` map on the Locations template once it was nested inside a Collection List item that Webflow had named `show_item` — the fix was scoping these selectors, not touching `location-map` at all. If a future collision happens with a differently-named class, prefer scoping the colliding selector the same way over renaming the CMS list's classes.
 
 ## DOM Expectations
 

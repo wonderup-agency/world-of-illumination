@@ -4,7 +4,7 @@
   pointer-events: none;
 }
 
-.show_item {
+.show_orbit .show_item {
   position: absolute;
   top: 0;
   left: 0;
@@ -12,6 +12,6 @@
   cursor: pointer;
 }
 
-.show_item-featured {
+.show_orbit .show_item-featured {
   display: none;
 }
