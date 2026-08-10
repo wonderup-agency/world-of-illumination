@@ -1,0 +1,51 @@
+/* Hides slides until Swiper initializes, to avoid the initial flash */
+[data-component='theme-carousel'] .swiper:not(.swiper-initialized) {
+  overflow: hidden;
+}
+
+[data-component='theme-carousel']
+  .swiper:not(.swiper-initialized)
+  .swiper-slide {
+  opacity: 0;
+}
+
+/* Once initialized, let the centered neighbor cards peek outside the container */
+[data-component='theme-carousel'] .swiper.swiper-initialized {
+  overflow: visible;
+}
+
+/* Explicit slide width so neighbor cards peek at the sides instead of each
+   slide filling the whole container — slidesPerView: 'auto' never sets this
+   itself, and without it the slide falls back to the bundled Swiper CSS's
+   bare `.swiper-slide { width: 100% }` rule (leaked sitewide via
+   testimonials.js's `swiper/css` import), which this more specific selector
+   overrides. Same values as locations.css — adjust per design. */
+[data-component='theme-carousel'] .swiper-slide {
+  width: 440px;
+}
+
+@media (max-width: 991px) {
+  [data-component='theme-carousel'] .swiper-slide {
+    width: 320px;
+  }
+}
+
+@media (max-width: 479px) {
+  [data-component='theme-carousel'] .swiper-slide {
+    width: 260px;
+  }
+}
+
+/* Active card is full size; neighbors are scaled down and dimmed */
+[data-component='theme-carousel'] .swiper-slide .theme_card-wrapper {
+  transform: scale(0.9);
+  opacity: 0.4;
+  transition:
+    transform 0.5s ease,
+    opacity 0.5s ease;
+}
+
+[data-component='theme-carousel'] .swiper-slide-active .theme_card-wrapper {
+  transform: scale(1);
+  opacity: 1;
+}

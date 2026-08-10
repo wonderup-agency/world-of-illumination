@@ -14,6 +14,10 @@
 
 export default [
   {
+    selector: "[data-component='theme-carousel']",
+    importFn: () => import('./components/theme-carousel.js'),
+  },
+  {
     selector: "[data-component='slider-swiper']",
     importFn: () => import('./components/slider-swiper.js'),
   },
