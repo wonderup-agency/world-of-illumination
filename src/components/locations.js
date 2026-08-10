@@ -54,6 +54,7 @@ export default function (elements) {
       centeredSlides: true,
       grabCursor: true,
       spaceBetween: 24,
+      watchOverflow: true,
       initialSlide: middleIndex,
       navigation: {
         prevEl,

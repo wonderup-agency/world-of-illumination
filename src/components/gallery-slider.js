@@ -27,6 +27,7 @@ export default function (elements) {
       slidesPerView: 1.2,
       spaceBetween: 16,
       grabCursor: true,
+      watchOverflow: true,
       initialSlide: middleIndex,
       navigation: {
         prevEl,

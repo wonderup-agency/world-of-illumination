@@ -74,7 +74,12 @@ your visual styling (background, radius, etc.) on a child instead.
   `locations` does) so there's no empty gap on the left edge on load — with
   `centeredSlides`, starting on slide 0 would leave the "previous" side empty
   since there's nothing before the first slide. Wires `.slider-prev` /
-  `.slider-next` as navigation.
+  `.slider-next` as navigation. The arrows are always visible (per design)
+  and dim automatically (`opacity: 0.4`, `pointer-events: none`, via
+  `gallery-slider.css`'s `.swiper-button-disabled` rule) whenever they can't
+  be used — both when there aren't enough slides to ever scroll
+  (`watchOverflow: true` marks both arrows disabled) and when you're at the
+  first/last slide of a longer list (only that one arrow gets dimmed).
 - **Resize**: Not used — Swiper's own default resize handling re-measures
   and recalculates slide widths internally.
 - **Breakpoint**: Not used — responsiveness is handled by Swiper's own
@@ -87,7 +92,8 @@ your visual styling (background, radius, etc.) on a child instead.
 - `src/styles/gallery-slider.css` — hides slides until Swiper initializes (to
   avoid an initial flash of unstyled/stacked content), then switches the
   `.swiper` container to `overflow: visible` once initialized so the peeking
-  neighbor slides aren't clipped.
+  neighbor slides aren't clipped. Also styles the "can't navigate" dimmed
+  arrow state described above (see Notes for why it needs `!important`).
 
 ## DOM Expectations
 
@@ -114,3 +120,8 @@ Elements matching `[data-component='gallery-slider']` must contain:
 - No CMS-specific logic (no "new show" reordering like `locations`, no
   forced eager-loading of images) — if a future section needs either of
   those, use `locations` or fork a new variant instead of adding it here.
+- **Why the dimmed-arrow CSS needs `!important`**: see the same note in
+  [`slider-swiper.md`](./slider-swiper.md#notes) — `testimonials.js` imports
+  `swiper/css/navigation`, whose bare `.swiper-button-lock` rule ships
+  sitewide in the shared `dist/styles.css` and would otherwise hide this
+  component's arrows too whenever the slider locks.
