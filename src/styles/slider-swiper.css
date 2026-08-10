@@ -1,0 +1,28 @@
+/* Hides slides until Swiper initializes, to avoid the initial flash */
+[data-component='slider-swiper'] .swiper:not(.swiper-initialized) {
+  overflow: hidden;
+}
+
+[data-component='slider-swiper']
+  .swiper:not(.swiper-initialized)
+  .swiper-slide {
+  opacity: 0;
+}
+
+/* Dim (never hide) whichever arrow can't be used right now — this also
+   covers "not enough slides to ever scroll" (watchOverflow), since Swiper
+   marks both arrows disabled AND locked in that case too. Lights back up on
+   its own once enough slides exist. The `display: flex !important` undoes
+   Swiper's own bundled `.swiper-button-lock { display: none }` rule — it
+   ships in the site's shared dist/styles.css because `testimonials.js`
+   imports `swiper/css/navigation`, and that CSS isn't scoped to
+   testimonials, it's a bare class selector that matches this component's
+   arrows too. */
+[data-component='slider-swiper'] .slider-prev.swiper-button-disabled,
+[data-component='slider-swiper'] .slider-next.swiper-button-disabled,
+[data-component='slider-swiper'] .slider-prev.swiper-button-lock,
+[data-component='slider-swiper'] .slider-next.swiper-button-lock {
+  display: flex !important;
+  opacity: 0.4;
+  pointer-events: none;
+}
