@@ -18,6 +18,23 @@
   white-space: nowrap;
 }
 
+/* 4rem between items reads as a huge empty gap once the track is only a few
+   hundred px wide — scale the spacing down with the viewport. Kept as
+   margin-right (never gap on the track) so the -50% loop math stays exact. */
+@media (max-width: 767px) {
+  .marquee_item {
+    gap: 0.75rem;
+    margin-right: 2rem;
+  }
+}
+
+@media (max-width: 479px) {
+  .marquee_item {
+    gap: 0.5rem;
+    margin-right: 1.5rem;
+  }
+}
+
 @keyframes marquee {
   to {
     transform: translateX(-50%);
