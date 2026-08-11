@@ -14,6 +14,10 @@
 
 export default [
   {
+    selector: "[data-component='image-grow']",
+    importFn: () => import('./components/image-grow.js'),
+  },
+  {
     selector: "[data-component='theme-carousel']",
     importFn: () => import('./components/theme-carousel.js'),
   },

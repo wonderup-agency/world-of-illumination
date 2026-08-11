@@ -9,7 +9,9 @@
 │   │   ├── global.js              Runs on every page before components load
 │   │   ├── elastic-pulse-button.js Bouncy squash-&-stretch hover effect on buttons (GSAP)
 │   │   ├── horizontal-scroll.js   Osmo-style horizontal scroll + curtain pin effect
-│   │   └── horizontal-scroll.css  Structural CSS for the horizontal-scroll component
+│   │   ├── horizontal-scroll.css  Structural CSS for the horizontal-scroll component
+│   │   ├── image-grow.js          Sticky-pinned section with a clip-path image grow-to-fullscreen
+│   │   └── image-grow.css         Structural CSS for the image-grow component
 │   └── pages/
 │       └── .gitkeep               Per-page standalone bundles go here
 │

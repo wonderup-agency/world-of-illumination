@@ -1,0 +1,79 @@
+/* image-grow — pure-CSS sticky pin (no ScrollTrigger pin, so it never fights
+   Lenis) + clip-path growth (no width/height animation, so nothing reflows
+   per frame). Nothing here does anything until image-grow.js adds
+   .is-image-grow, so with JS off (or below 992px, or under reduced motion)
+   the pin and target render as plain, normal-flow elements — whatever size
+   Webflow gave them. */
+
+[data-component='image-grow'] {
+  /* Keeps the pin's z-index local to this section, same reasoning as
+     footer.css/section-reveal.css. */
+  isolation: isolate;
+}
+
+/* The pin: stuck to the top of the viewport while its JS-appended spacer
+   scrolls underneath it, then released back into flow. Breaks out to the
+   full viewport width regardless of an ancestor's padding-global/
+   container-large constraint, since the image needs to reach the true screen
+   edges once grown.
+
+   margin, not left: 50% + a negative margin — the classic breakout trick —
+   because `left` on a position: sticky element isn't a plain offset the way
+   it is on position: relative. It only ever takes effect to satisfy sticky's
+   own stick-to-this-edge constraint, which is never triggered here since the
+   page never scrolls horizontally. Margin is unaffected by the positioning
+   scheme, so calc(50% - 50vw) is what actually re-centers a 100vw box under
+   a max-width, centered ancestor like container-large. */
+.is-image-grow [data-image-grow='pin'] {
+  position: sticky;
+  top: 0;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  height: 100vh;
+  /* Webflow's own .full-height_component ships with `max-height: 60rem` (a
+     sensible cap for its usual "roughly full viewport" use, but wrong here) —
+     max-height and height are different properties, so setting height alone
+     never overrides it. Without this, the pin (and everything measured off
+     it — the spacer, the whole grow range) is silently capped at 60rem tall
+     on any viewport taller than that. */
+  max-height: none;
+  overflow: hidden;
+}
+
+/* The target: sized to the pin (i.e. already at its fullscreen size) from the
+   start — clip-path is what makes it read as a smaller centered card at rest.
+   will-change hints the browser to keep this on its own layer, since it
+   repaints every frame of the grow. */
+.is-image-grow [data-image-grow='target'] {
+  position: absolute;
+  inset: 0;
+  will-change: clip-path;
+}
+
+.is-image-grow [data-image-grow='target'] img {
+  width: 100%;
+  height: 100%;
+  /* Webflow's own image class on this project's card treatment ships with
+     `max-width: 28rem` (a deliberate cap for the original centered-card
+     look, confirmed via the Webflow MCP) — same class of bug as the pin's
+     max-height above: max-width always wins over width when they conflict,
+     so without this override the image can never render wider than 28rem no
+     matter how big its wrapper grows. */
+  max-width: none;
+  object-fit: cover;
+}
+
+/* Appended by image-grow.js — sticky needs slack below the pin to stay stuck
+   through, and this is exactly the grow's own scroll distance. Covered by the
+   pin at every scroll position, so it is never visible. */
+.image-grow_reveal-spacer {
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Belt and braces — the JS already skips all setup under reduced motion. */
+  [data-image-grow='target'] {
+    clip-path: none !important;
+  }
+}
