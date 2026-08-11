@@ -33,7 +33,10 @@ No prev/next buttons are needed or read by this component.
 
 ## Behavior
 
-- **Init**: Before Swiper runs, pads the real `.swiper-slide` set with
+- **Init**: Before Swiper runs, forces every `<img>` inside each real slide's
+  `.theme_card-wrapper` to `loading="eager"` (see Notes — same mobile
+  card-growing bug as `locations`'s eager-image-load workaround). Then pads
+  the real `.swiper-slide` set with
   duplicate rounds of itself (cloned, `aria-hidden="true"`) until at least
   `MIN_SLIDES_FOR_LOOP` (16) exist in the DOM — see Notes for why. Then
   initializes a Swiper instance on `.swiper` with `centeredSlides: true` and
@@ -74,6 +77,20 @@ Elements matching `[data-component='theme-carousel']` must contain:
 
 ## Notes
 
+- **Forced eager image loading (mobile card-growing bug)**: Webflow marks
+  images `loading="lazy"` by default, and native lazy-loading judges distance
+  from the viewport using the slider's *untransformed* layout — before
+  `centeredSlides` shifts the row via `translateX`. On mobile, where cards are
+  narrower, several land far enough right in that pre-transform layout to
+  never get judged "near enough" to load, staying pending until dragged/
+  scrolled near. Since nothing here reserves the card's size ahead of the
+  image loading, the symptom was each card visibly snapping/growing to its
+  real size right as its image finally loaded — which, since loading is
+  triggered by nearing the center, happened once per unique card during the
+  first lap, then never again (loaded images stay cached). Same root cause
+  and fix as `locations.js`'s `.location_image` handling, generalized here
+  to any `<img>` inside `.theme_card-wrapper` since this component's card
+  markup is free to differ per instance.
 - **Slide width is fixed in CSS** (`440px` desktop, `320px` at ≤991px,
   `260px` at ≤479px — same values as `locations`), not left to Webflow.
   `slidesPerView: 'auto'` never sets a width itself, and without an explicit

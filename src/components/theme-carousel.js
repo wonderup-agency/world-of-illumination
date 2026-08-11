@@ -26,6 +26,23 @@ export default function (elements) {
 
     if (!container || !wrapper || realSlides.length < 2) return
 
+    // Native loading="lazy" measures each image's distance from the viewport
+    // using the slider's untransformed layout (before centeredSlides shifts
+    // the row via translateX). On mobile especially, cards far enough to the
+    // right in that pre-transform layout never get judged "near enough" to
+    // load and stay pending until they're dragged/scrolled near — and since
+    // nothing here reserves the card's size ahead of the image loading, the
+    // card visibly snaps/grows to its real size the moment the image finally
+    // loads (typically right as it nears the center). Forcing eager loading
+    // sidesteps the wrong distance measurement entirely — same fix as
+    // locations.js's `.location_image` handling, generalized here since this
+    // component's card markup is free to differ per instance.
+    realSlides.forEach((slide) => {
+      slide.querySelectorAll('.theme_card-wrapper img').forEach((img) => {
+        img.loading = 'eager'
+      })
+    })
+
     // Swiper's loop needs enough real slides to duplicate around the loop
     // boundary. With a fixed card width several cards peek at once (same
     // "many visible" look as locations), and a small CMS list (e.g. 5
