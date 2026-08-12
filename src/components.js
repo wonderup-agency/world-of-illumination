@@ -14,6 +14,10 @@
 
 export default [
   {
+    selector: "[data-component='tapes']",
+    importFn: () => import('./components/tapes.js'),
+  },
+  {
     selector: "[data-component='image-grow']",
     importFn: () => import('./components/image-grow.js'),
   },

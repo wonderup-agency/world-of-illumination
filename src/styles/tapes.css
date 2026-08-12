@@ -1,0 +1,77 @@
+/*
+tapes — tapes.js promotes each .tape-element row into an infinite marquee
+loop (clone-fill + -50% translateX, same technique as marquee.css), then
+this file tilts the two rows opposite directions so they cross in an X.
+
+Angle is fixed at 6deg. 10.51vw below = 100 * tan(6deg) — recalculate it if
+the angle ever changes. The 9.5rem term in the height formula covers the
+row's own thickness (h4 line-height 2.6rem + the 1rem/1rem padding already
+set on .tape-element in Webflow) plus the 4rem vertical gap between the two
+rows' centers, with a small safety margin — see tapes.md for the full
+derivation. If the Heading's font size or the .tape-element padding ever
+change in Webflow, re-check this constant.
+*/
+
+[data-component='tapes'] {
+  position: relative;
+  overflow: hidden;
+  height: clamp(11rem, 9.5rem + 10.51vw, 23rem);
+}
+
+[data-component='tapes'] .tape-element {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 140%;
+  overflow: hidden;
+  transform: translate(-50%, calc(-50% - 2rem)) rotate(-6deg);
+}
+
+[data-component='tapes'] .tape-element.reverse {
+  transform: translate(-50%, calc(-50% + 2rem)) rotate(6deg);
+}
+
+[data-component='tapes'] .tape-element.reverse .tape_track {
+  animation-direction: reverse;
+}
+
+[data-component='tapes'] .tape_track {
+  display: flex;
+  align-items: center;
+  width: max-content;
+  animation: tape-marquee 20s linear infinite;
+}
+
+[data-component='tapes'] .tape_item {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  white-space: nowrap;
+  margin-right: 4rem;
+}
+
+@media (max-width: 767px) {
+  [data-component='tapes'] .tape-element {
+    transform: translate(-50%, calc(-50% - 1rem)) rotate(-6deg);
+  }
+
+  [data-component='tapes'] .tape-element.reverse {
+    transform: translate(-50%, calc(-50% + 1rem)) rotate(6deg);
+  }
+
+  [data-component='tapes'] .tape_item {
+    margin-right: 2rem;
+  }
+}
+
+@keyframes tape-marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-component='tapes'] .tape_track {
+    animation: none;
+  }
+}
