@@ -8,6 +8,7 @@ import '../styles/marquee.css'
 const DEFAULT_SPEED = 60 // pixels per second, used when data-marquee-speed is absent
 const SPEED_ATTR = 'data-marquee-speed'
 const REVERSE_ATTR = 'data-marquee-reverse'
+const GAP_ATTR = 'data-marquee-gap'
 
 /**
  * @param {HTMLElement[]} elements - All elements matching [data-component='marquee']
@@ -23,6 +24,15 @@ export default function (elements) {
     if (el.hasAttribute(REVERSE_ATTR)) {
       track.style.animationDirection = 'reverse'
     }
+
+    // Extra spacing between specific children inside a .marquee_item (e.g. the
+    // gap between two headings), on top of the flex `gap` already there.
+    // Applied before baseItems is captured so every clone carries it.
+    track.querySelectorAll(`[${GAP_ATTR}]`).forEach((node) => {
+      const raw = node.getAttribute(GAP_ATTR).trim()
+      if (!raw) return
+      node.style.marginLeft = /^-?\d+(\.\d+)?$/.test(raw) ? `${raw}px` : raw
+    })
 
     const baseItems = Array.from(track.children).map((item) =>
       item.cloneNode(true)
