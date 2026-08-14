@@ -21,6 +21,12 @@
   inset: 0;
 }
 
+/* Floating address card — clickable, opens Google Maps directions (see
+   setupDirectionsCard() in location-map.js). */
+.direction-card {
+  cursor: pointer;
+}
+
 /* Image marker (circular logo face) */
 .lm-marker {
   width: 3rem;

@@ -23,6 +23,7 @@ Optional roles/classes inside the wrapper:
 | --- | --- |
 | `[data-map="map"]` | empty div where Mapbox mounts (falls back to the wrapper itself if absent) |
 | `.location_logo` | `<img>` used as the circular marker face (optional — plain pin if missing) |
+| `.direction-card` | floating address card — if present, becomes a "Get Directions" click/tap target (optional) |
 
 Coordinates are the only required binding. They can sit on the wrapper or on
 any child element carrying `data-map-lat` / `data-map-lng`.
@@ -42,6 +43,15 @@ Load Mapbox GL JS globally via CDN in Webflow (it is not bundled):
   on that point (`ZOOM = 12`, `minZoom = 3`) with a NavigationControl (no
   compass). On the map's `load` event, adds one marker — a circular image
   marker if a `.location_logo` is present, otherwise a plain pin.
+- **Directions card**: If a `.direction-card` element exists inside the
+  wrapper, it's wired as a click/tap (and keyboard Enter/Space) target that
+  opens Google Maps' universal directions URL
+  (`google.com/maps/dir/?api=1&destination=lat,lng`) in a new tab, using the
+  same `data-map-lat`/`data-map-lng` the map itself reads — no separate data
+  entry needed. Set up independently of the Mapbox map itself (still works
+  even if Mapbox fails to load). No DOM restructuring — the card stays a
+  `<div>`, not an `<a>`; JS adds `role="link"`, `tabindex="0"` and an
+  `aria-label` for accessibility.
 - **Resize**: Uses the main.js `resize` hook — calls `map.resize()` so the map
   stays sized to its container.
 - **Breakpoint**: Not used.
@@ -58,6 +68,7 @@ Load Mapbox GL JS globally via CDN in Webflow (it is not bundled):
   `data-map-lng` (on it or a child).
 - Optional `[data-map="map"]` mount point inside the wrapper.
 - Optional `.location_logo` `<img>` for the marker face.
+- Optional `.direction-card` for the clickable "Get Directions" card.
 
 ## Testing
 

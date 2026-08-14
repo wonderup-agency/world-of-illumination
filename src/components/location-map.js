@@ -111,8 +111,40 @@ class LocationMap {
     // Optional custom pin image — takes precedence over the logo face.
     this.pin = markerImage(markerScope(wrapper))
 
+    this.setupDirectionsCard()
+
     this.map = null
     this.initMap()
+  }
+
+  /*
+  Optional `.direction-card` (a floating address card rendered over the map in
+  Webflow) becomes a "Get Directions" trigger — clicking/tapping it opens
+  Google Maps' universal directions URL for this.lat/this.lng. That URL
+  (google.com/maps/dir) is Google's own cross-platform link: the Google Maps
+  app intercepts it automatically on Android/iOS when installed, otherwise it
+  falls back to the Google Maps website — no user-agent sniffing or custom
+  `comgooglemaps://` scheme needed (which has no web fallback if the app isn't
+  installed). Independent of Mapbox — still added even if Mapbox/the map
+  itself fails to load.
+  */
+  setupDirectionsCard() {
+    const card = this.wrapper.querySelector('.direction-card')
+    if (!card) return
+
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${this.lat},${this.lng}`
+    const open = () => window.open(url, '_blank', 'noopener,noreferrer')
+
+    card.setAttribute('role', 'link')
+    card.setAttribute('tabindex', '0')
+    card.setAttribute('aria-label', 'Get directions (opens Google Maps)')
+    card.addEventListener('click', open)
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault()
+        open()
+      }
+    })
   }
 
   initMap() {
