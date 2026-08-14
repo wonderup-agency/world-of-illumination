@@ -25,14 +25,19 @@ export default function (elements) {
       track.style.animationDirection = 'reverse'
     }
 
-    // Extra spacing between specific children inside a .marquee_item (e.g. the
-    // gap between two headings), on top of the flex `gap` already there.
-    // Applied before baseItems is captured so every clone carries it.
-    track.querySelectorAll(`[${GAP_ATTR}]`).forEach((node) => {
-      const raw = node.getAttribute(GAP_ATTR).trim()
-      if (!raw) return
-      node.style.marginLeft = /^-?\d+(\.\d+)?$/.test(raw) ? `${raw}px` : raw
-    })
+    // Extra spacing between an item's two headings (its 1st and 2nd children),
+    // on top of the flex `gap` already there — read off the wrapper, same as
+    // speed/reverse, so it stays a per-instance override. Applied before
+    // baseItems is captured so every clone carries it.
+    const gapRaw = el.getAttribute(GAP_ATTR)
+    if (gapRaw && gapRaw.trim()) {
+      const gap = gapRaw.trim()
+      const gapValue = /^-?\d+(\.\d+)?$/.test(gap) ? `${gap}px` : gap
+      Array.from(track.children).forEach((item) => {
+        const second = item.children[1]
+        if (second) second.style.marginLeft = gapValue
+      })
+    }
 
     const baseItems = Array.from(track.children).map((item) =>
       item.cloneNode(true)
