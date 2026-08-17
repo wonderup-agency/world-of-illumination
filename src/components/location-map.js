@@ -111,7 +111,7 @@ class LocationMap {
     // Optional custom pin image — takes precedence over the logo face.
     this.pin = markerImage(markerScope(wrapper))
 
-    this.setupDirectionsCard()
+    this.setupLocationCard()
 
     this.map = null
     this.initMap()
@@ -119,25 +119,34 @@ class LocationMap {
 
   /*
   Optional `.direction-card` (a floating address card rendered over the map in
-  Webflow) becomes a "Get Directions" trigger — clicking/tapping it opens
-  Google Maps' universal directions URL for this.lat/this.lng. That URL
-  (google.com/maps/dir) is Google's own cross-platform link: the Google Maps
+  Webflow — the class name is Webflow's and predates this behaviour) becomes a
+  "see this place on Google Maps" trigger: clicking/tapping it opens Google
+  Maps centred on this.lat/this.lng, with the pin dropped and the place panel
+  open, but WITHOUT starting navigation.
+
+  `google.com/maps/search/?api=1&query=lat,lng` is the URL for that. Note the
+  deliberate choice of `search` over the `dir` (directions) endpoint this
+  shipped with first — `dir` opens straight into turn-by-turn routing from the
+  user's current position, which is a heavier action than "show me where this
+  is". Either way it's Google's own cross-platform Maps URL: the Google Maps
   app intercepts it automatically on Android/iOS when installed, otherwise it
   falls back to the Google Maps website — no user-agent sniffing or custom
   `comgooglemaps://` scheme needed (which has no web fallback if the app isn't
-  installed). Independent of Mapbox — still added even if Mapbox/the map
-  itself fails to load.
+  installed). Directions are one tap away from there, inside Maps itself.
+
+  Independent of Mapbox — still added even if Mapbox/the map itself fails to
+  load.
   */
-  setupDirectionsCard() {
+  setupLocationCard() {
     const card = this.wrapper.querySelector('.direction-card')
     if (!card) return
 
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${this.lat},${this.lng}`
+    const url = `https://www.google.com/maps/search/?api=1&query=${this.lat},${this.lng}`
     const open = () => window.open(url, '_blank', 'noopener,noreferrer')
 
     card.setAttribute('role', 'link')
     card.setAttribute('tabindex', '0')
-    card.setAttribute('aria-label', 'Get directions (opens Google Maps)')
+    card.setAttribute('aria-label', 'View this location on Google Maps')
     card.addEventListener('click', open)
     card.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
@@ -161,6 +170,18 @@ class LocationMap {
       center: [this.lng, this.lat],
       zoom: ZOOM,
       minZoom: 3,
+      /*
+      Cooperative gestures — Mapbox's own option, not custom code. Without it
+      the map swallows the page scroll: a wheel over it zooms the map instead
+      of scrolling past, and a one-finger drag on touch pans the map instead
+      of the page. With it, a plain wheel / one-finger drag always goes to the
+      page, and the map only takes over on a deliberate gesture — ctrl (⌘ on
+      Mac) + scroll on desktop, two fingers on touch — with Mapbox's own hint
+      overlay shown when a blocked gesture is attempted (restyled in
+      location-map.css). Clicks, mouse drags and the zoom buttons are
+      unaffected. Kept in sync with tabs-map.js / tabs-map-v2.js.
+      */
+      cooperativeGestures: true,
     })
 
     this.map.addControl(

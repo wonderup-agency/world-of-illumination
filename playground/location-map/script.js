@@ -113,6 +113,9 @@ class LocationMap {
       center: [this.lng, this.lat],
       zoom: ZOOM,
       minZoom: 3,
+      // Plain scroll / one-finger drag goes to the page; the map only takes
+      // over on ctrl (⌘) + scroll or two fingers. See src/components/location-map.js.
+      cooperativeGestures: true,
     })
 
     this.map.addControl(

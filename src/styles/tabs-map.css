@@ -212,6 +212,35 @@
   display: none !important;
 }
 
+/*
+Cooperative-gestures hint overlay ("Use ctrl + scroll to zoom the map" /
+"Use two fingers to move the map"), shown by Mapbox when a blocked gesture is
+attempted — see cooperativeGestures in tabs-map.js. Mapbox's default is a flat
+black sheet in a system font; this restyles it to the site's palette and lets
+it inherit the page's own typeface.
+
+Scoped under the component wrapper on purpose: these are bare Mapbox class
+names, and every component's CSS bundles into one sitewide dist/styles.css, so
+an unscoped rule would restyle any other Mapbox map on the site (see
+CONVENTIONS.md). Mapbox's own opacity/transition rules are left untouched —
+only the look is overridden, not the show/hide behaviour.
+*/
+[data-component='tabs-map'] .mapboxgl-map,
+[data-component='tabs-map'] .mapboxgl-scroll-zoom-blocker,
+[data-component='tabs-map'] .mapboxgl-touch-pan-blocker {
+  font-family: inherit;
+}
+[data-component='tabs-map'] .mapboxgl-scroll-zoom-blocker,
+[data-component='tabs-map'] .mapboxgl-touch-pan-blocker {
+  padding: 1.5rem;
+  background: rgba(0, 6, 35, 0.75);
+  color: #fff;
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.4;
+  border-radius: inherit;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .tickets-state_tab-pill,
   .em-marker,

@@ -1,0 +1,33 @@
+/* subnav — hidden state for the sticky location subnav.
+
+   Scoped to the component's own attribute rather than .subnav_component, so
+   nothing here can reach an unrelated element that happens to reuse the same
+   Webflow class (see CONVENTIONS.md — every component's CSS ships in the same
+   sitewide dist/styles.css).
+
+   subnav.js toggles .is-hidden when the footer reaches the subnav. The
+   transform lifts it out of the way; opacity and visibility are what actually
+   take it off screen, so the exact sticky offset never has to be accounted for
+   here. visibility also does two useful things for free: the bar drops out of
+   the tab order while hidden, and global.js's getFixedNavHeight() skips it, so
+   anchor-link offsets stop reserving room for a bar that isn't there. */
+
+[data-component='subnav'] {
+  transition:
+    transform 0.4s ease,
+    opacity 0.4s ease,
+    visibility 0.4s ease;
+}
+
+[data-component='subnav'].is-hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-component='subnav'] {
+    transition: none;
+  }
+}

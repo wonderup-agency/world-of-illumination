@@ -340,6 +340,18 @@ class TabsMap {
       bounds: this.calculateBounds(this.data),
       fitBoundsOptions: FIT_OPTIONS,
       minZoom: 3,
+      /*
+      Cooperative gestures — Mapbox's own option, not custom code. Without it
+      the map swallows the page scroll: a wheel over it zooms the map instead
+      of scrolling past, and a one-finger drag on touch pans the map instead
+      of the page. With it, a plain wheel / one-finger drag always goes to the
+      page, and the map only takes over on a deliberate gesture — ctrl (⌘ on
+      Mac) + scroll on desktop, two fingers on touch — with Mapbox's own hint
+      overlay shown when a blocked gesture is attempted (restyled in
+      tabs-map.css). Marker clicks, mouse drags and the zoom buttons are
+      unaffected. Kept in sync with location-map.js / tabs-map-v2.js.
+      */
+      cooperativeGestures: true,
     })
     this.map.addControl(
       new mapboxgl.NavigationControl({ showCompass: false }),

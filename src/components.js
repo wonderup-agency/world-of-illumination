@@ -14,6 +14,10 @@
 
 export default [
   {
+    selector: "[data-component='subnav']",
+    importFn: () => import('./components/subnav.js'),
+  },
+  {
     selector: "[data-component='tapes']",
     importFn: () => import('./components/tapes.js'),
   },

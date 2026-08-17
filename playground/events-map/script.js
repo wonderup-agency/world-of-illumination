@@ -328,6 +328,9 @@ class TabsMap {
       bounds: this.calculateBounds(this.data),
       fitBoundsOptions: FIT_OPTIONS,
       minZoom: 3,
+      // Plain scroll / one-finger drag goes to the page; the map only takes
+      // over on ctrl (⌘) + scroll or two fingers. See src/components/tabs-map.js.
+      cooperativeGestures: true,
     })
     this.map.addControl(
       new mapboxgl.NavigationControl({ showCompass: false }),

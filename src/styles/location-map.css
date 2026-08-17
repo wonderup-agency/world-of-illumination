@@ -21,8 +21,8 @@
   inset: 0;
 }
 
-/* Floating address card — clickable, opens Google Maps directions (see
-   setupDirectionsCard() in location-map.js). */
+/* Floating address card — clickable, opens this location on Google Maps (see
+   setupLocationCard() in location-map.js). */
 .direction-card {
   cursor: pointer;
 }
@@ -111,4 +111,33 @@
 .mapboxgl-ctrl-attrib,
 .mapboxgl-ctrl-logo {
   display: none !important;
+}
+
+/*
+Cooperative-gestures hint overlay ("Use ctrl + scroll to zoom the map" /
+"Use two fingers to move the map"), shown by Mapbox when a blocked gesture is
+attempted — see cooperativeGestures in location-map.js. Mapbox's default is a
+flat black sheet in a system font; this restyles it to the site's palette and
+lets it inherit the page's own typeface.
+
+Scoped under the component wrapper on purpose: these are bare Mapbox class
+names, and every component's CSS bundles into one sitewide dist/styles.css, so
+an unscoped rule would restyle any other Mapbox map on the site (see
+CONVENTIONS.md). Mapbox's own opacity/transition rules are left untouched —
+only the look is overridden, not the show/hide behaviour.
+*/
+[data-component='location-map'] .mapboxgl-map,
+[data-component='location-map'] .mapboxgl-scroll-zoom-blocker,
+[data-component='location-map'] .mapboxgl-touch-pan-blocker {
+  font-family: inherit;
+}
+[data-component='location-map'] .mapboxgl-scroll-zoom-blocker,
+[data-component='location-map'] .mapboxgl-touch-pan-blocker {
+  padding: 1.5rem;
+  background: rgba(0, 6, 35, 0.75);
+  color: #fff;
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.4;
+  border-radius: inherit;
 }
