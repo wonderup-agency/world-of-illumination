@@ -14,6 +14,10 @@
 
 export default [
   {
+    selector: "[data-component='location-year-filter']",
+    importFn: () => import('./components/location-year-filter.js'),
+  },
+  {
     selector: "[data-component='subnav']",
     importFn: () => import('./components/subnav.js'),
   },
