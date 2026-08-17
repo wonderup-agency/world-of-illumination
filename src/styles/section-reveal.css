@@ -1,9 +1,9 @@
 /*
 section-reveal — structural CSS
 
-Nothing here does anything until the JS adds a state class, so with JS off (or
-under reduced motion, or below 992px) every section stays in normal flow, in
-order, fully readable. Everything visual stays in Webflow.
+Nothing here does anything until the JS adds a state class, so with JS off or
+under reduced motion every section stays in normal flow, in order, fully
+readable. Everything visual stays in Webflow.
 */
 
 /* Keeps the z-index ladder the JS builds for the reveal pairs local to this
@@ -23,7 +23,25 @@ order, fully readable. Everything visual stays in Webflow.
    min-height — both variants only stay gap-free while every section involved is
    at least a viewport tall: the curtain has to cover the screen on its own, and
    the section underneath has to still cover it once the curtain is gone. A
-   requirement of the effect, not a style choice. */
+   requirement of the effect, not a style choice. It is also what makes the
+   reveal worth watching on a phone, where several of these sections are
+   otherwise sized to their content — this is the rule that holds them open to a
+   full screen, and it wins over a shorter Webflow `height` because the used
+   height of a box is max(min-height, min(height, max-height)).
+
+   vh, deliberately, and NOT the svh this project uses everywhere else. On mobile
+   vh resolves to the LARGE viewport — the screen with the address bar retracted
+   — which is the taller of the two states and therefore the only one that
+   guarantees coverage in both. svh is the short state: size a section to 100svh
+   and the moment the address bar slides away mid-scroll the viewport grows past
+   it, leaving a strip of the section behind showing exactly while it is supposed
+   to be covered. That is not a corner case here — the bar retracts as soon as
+   the reader starts scrolling, which is when these reveals run.
+
+   The cost is at rest, above the fold: a section pinned to the large viewport
+   is taller than the visible area while the bar is still shown, so bottom-
+   aligned content inside it (the hero) sits lower than it did. That is a
+   Webflow-side layout call, not something to fix by shortening the section. */
 .section-reveal--curtain,
 .section-reveal--held,
 .section-reveal--rising,

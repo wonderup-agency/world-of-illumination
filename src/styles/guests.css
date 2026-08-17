@@ -1,0 +1,219 @@
+/* guests — responsive sizing and placement for the scattered parallax cards.
+
+   Desktop (>=992px) is left entirely to Webflow: every rule in this file lives
+   inside a max-width media query, so nothing here can regress the Designer
+   composition. Below 992px the Designer values were tuned against a much wider
+   canvas — one card (.guest_image-is-7) still renders 25rem/400px wide with no
+   tablet override at all, which is wider than a 375px phone — and guests.js now
+   runs the parallax down there too, so the layer needs a composition of its own.
+
+   Everything is scoped under [data-component='guests'] rather than using the
+   bare .guest_image-* classes. All component CSS bundles into one sitewide
+   dist/styles.css, so a bare selector would also hit any future Collection List
+   that happens to reuse the name — the exact bug documented in CONVENTIONS.md
+   and shows.md.
+
+   Widths are vw, not Webflow's fixed rem, so a card keeps its proportion of the
+   screen across a whole breakpoint range instead of being correct at one width
+   only (same reasoning as the vw term in tapes.css). height: auto +
+   aspect-ratio replaces Webflow's explicit rem height, which keeps every card's
+   original crop exactly as designed while it scales. */
+
+@media screen and (max-width: 991px) {
+  /* The layer sits above .padding-global in DOM order but below it in paint
+     order (.full-height_component carries z-index: 1), so the cards already
+     render behind the copy. This makes the GET TICKETS tap target immune to
+     interception regardless of how the stacking is edited in the Designer
+     later — the cards are never interactive. */
+  [data-component='guests'] .guest_image-layer {
+    pointer-events: none;
+  }
+
+  [data-component='guests'] .guest_image-layer img {
+    height: auto;
+  }
+
+  /* Original Webflow crops, preserved: 225x275, 450x300, 225x200, 350x275,
+     400x300. */
+  [data-component='guests'] .guest_image-is-1,
+  [data-component='guests'] .guest_image-is-4 {
+    aspect-ratio: 9 / 11;
+  }
+
+  [data-component='guests'] .guest_image-is-3,
+  [data-component='guests'] .guest_image-is-6 {
+    aspect-ratio: 9 / 8;
+  }
+
+  [data-component='guests'] .guest_image-is-2 {
+    aspect-ratio: 3 / 2;
+  }
+
+  [data-component='guests'] .guest_image-is-5 {
+    aspect-ratio: 14 / 11;
+  }
+
+  [data-component='guests'] .guest_image-is-7 {
+    aspect-ratio: 4 / 3;
+  }
+
+  /* Clips the parallax drift back to the section. Webflow sets .section_guests
+     to overflow: visible at <=479px, and section-reveal — whose clip-path would
+     otherwise contain this — is gated to >=992px, so without this the cards
+     would drift out over the neighbouring sections on a phone. Applied across
+     the whole newly-activated range rather than only <=479px so a future
+     Designer edit to the section's overflow can't silently reintroduce it.
+     Behind the JS class, so with reduced motion or JS off Webflow's own
+     overflow setting stands untouched. */
+  [data-component='guests'].is-guests-parallax {
+    overflow: hidden;
+  }
+}
+
+/* ── Tablet (768–991px) ───────────────────────────────────────────────────
+   The .hide-tablet spacers are gone here, so the section collapses to roughly
+   one viewport with the copy centred in it. Cards are pushed into a top band,
+   the far left/right margins, and a bottom band, leaving the middle column
+   clear for the heading and the button. */
+@media screen and (min-width: 768px) and (max-width: 991px) {
+  [data-component='guests'] .guest_image-is-1 {
+    width: 19vw;
+    top: 9vh;
+    left: 3%;
+  }
+
+  [data-component='guests'] .guest_image-is-2 {
+    width: 34vw;
+    top: 1vh;
+    right: 10%;
+  }
+
+  [data-component='guests'] .guest_image-is-3 {
+    width: 19vw;
+    top: 21vh;
+    right: 2%;
+  }
+
+  [data-component='guests'] .guest_image-is-4 {
+    width: 19vw;
+    top: 48vh;
+    left: 1%;
+  }
+
+  [data-component='guests'] .guest_image-is-5 {
+    width: 28vw;
+    top: 63vh;
+    right: 0%;
+  }
+
+  [data-component='guests'] .guest_image-is-6 {
+    width: 19vw;
+    bottom: 6vh;
+    left: 40%;
+  }
+
+  [data-component='guests'] .guest_image-is-7 {
+    width: 30vw;
+    bottom: 2vh;
+    left: 4%;
+  }
+}
+
+/* ── Mobile landscape (480–767px) ─────────────────────────────────────────
+   The copy now spans most of the width, so horizontal clearance stops being
+   available and the vertical bands do all the work: everything is packed into
+   the top ~30vh and the bottom ~35vh, with the middle left to the text. */
+@media screen and (min-width: 480px) and (max-width: 767px) {
+  [data-component='guests'] .guest_image-is-1 {
+    width: 25vw;
+    top: 5vh;
+    left: 2%;
+  }
+
+  [data-component='guests'] .guest_image-is-2 {
+    width: 42vw;
+    top: 0vh;
+    right: 4%;
+  }
+
+  [data-component='guests'] .guest_image-is-3 {
+    width: 25vw;
+    top: 16vh;
+    right: 0%;
+  }
+
+  /* top: auto is load-bearing on both of these. Webflow anchors -is-4 and -is-5
+     from the top (54vh / 71vh) and they move to the bottom band here; an
+     absolutely positioned box with an explicit height and both top and bottom
+     set is over-constrained, and top wins — so without the reset the bottom
+     value below is silently ignored and the card stays mid-section. */
+  [data-component='guests'] .guest_image-is-4 {
+    width: 25vw;
+    top: auto;
+    bottom: 20vh;
+    left: 0%;
+  }
+
+  [data-component='guests'] .guest_image-is-5 {
+    width: 34vw;
+    top: auto;
+    bottom: 1vh;
+    right: 0%;
+  }
+
+  [data-component='guests'] .guest_image-is-6 {
+    width: 25vw;
+    bottom: 13vh;
+    left: 36%;
+  }
+
+  [data-component='guests'] .guest_image-is-7 {
+    width: 34vw;
+    bottom: 4vh;
+    left: 3%;
+  }
+}
+
+/* ── Mobile portrait (<=479px) ────────────────────────────────────────────
+   Seven cards do not fit around a full-height block of centred copy on a
+   phone, so only four run here — one per corner, chosen for the widest spread
+   of data-speed (0.18 / 0.34 / 0.20 / 0.30) so the parallax still reads as
+   layered depth. The three hidden ones are the slowest (0.06 / 0.09 / 0.13):
+   they contribute almost no movement and only crowd the frame.
+
+   display: none rather than opacity/visibility — it drops them from the
+   accessibility tree and from paint, and guests.js skips anything with no
+   offsetParent so they cost nothing per frame either. */
+@media screen and (max-width: 479px) {
+  [data-component='guests'] .guest_image-is-2,
+  [data-component='guests'] .guest_image-is-5,
+  [data-component='guests'] .guest_image-is-7 {
+    display: none;
+  }
+
+  [data-component='guests'] .guest_image-is-1 {
+    width: 28vw;
+    top: 1vh;
+    left: 1%;
+  }
+
+  [data-component='guests'] .guest_image-is-3 {
+    width: 28vw;
+    top: 4vh;
+    right: 1%;
+  }
+
+  /* Same top: auto reset as the mobile-landscape block above. */
+  [data-component='guests'] .guest_image-is-4 {
+    width: 28vw;
+    top: auto;
+    bottom: 2vh;
+    left: 1%;
+  }
+
+  [data-component='guests'] .guest_image-is-6 {
+    width: 28vw;
+    bottom: 4vh;
+    left: 64%;
+  }
+}

@@ -71,6 +71,22 @@ const CLASS = {
   base: 'section-reveal--base',
 }
 
+// window.innerHeight, cached — and on mobile that is not a constant. It grows by
+// the height of the address bar the moment that retracts during a scroll, which
+// is exactly when a reveal near the top of the page is running. The expand's
+// hold length is read on every frame, so taking the live value there would
+// change the hold distance mid-reveal while the trigger's own start/end still
+// reflected the old one, and the held section would jump by the height of the
+// address bar in the middle of the effect.
+//
+// Re-read only when ScrollTrigger itself re-measures. global.js sets
+// ignoreMobileResize, so an address-bar toggle is deliberately not one of those
+// moments — a genuine orientation change or a desktop window resize is.
+let viewport = window.innerHeight
+const syncViewport = () => {
+  viewport = window.innerHeight
+}
+
 /**
  * @param {HTMLElement[]} elements - All elements matching [data-component='section-reveal']
  */
@@ -85,40 +101,44 @@ export default function (elements) {
   }
 
   gsap.registerPlugin(ScrollTrigger)
+  ScrollTrigger.addEventListener('refreshInit', syncViewport)
 
   const mm = gsap.matchMedia()
   const built = []
 
-  mm.add(
-    '(min-width: 992px) and (prefers-reduced-motion: no-preference)',
-    () => {
-      const cleanups = []
+  // Every breakpoint, not just desktop. Both variants are driven by natural
+  // document scroll and a counter-translate rather than a pin, so nothing here
+  // is tied to a viewport width — and section-reveal.css already forces every
+  // section involved to at least one viewport tall, which is what keeps a
+  // phone-sized reveal worth watching instead of flashing past. Reduced motion
+  // is still an unconditional opt-out.
+  mm.add('(prefers-reduced-motion: no-preference)', () => {
+    const cleanups = []
 
-      elements.forEach((wrapper) => {
-        // Every pair is resolved before any of them is built, so the sibling
-        // lookups all run against the untouched document.
-        const pairs = resolvePairs(wrapper)
-        if (!pairs.length) return
+    elements.forEach((wrapper) => {
+      // Every pair is resolved before any of them is built, so the sibling
+      // lookups all run against the untouched document.
+      const pairs = resolvePairs(wrapper)
+      if (!pairs.length) return
 
-        applyStackingLadder(pairs)
+      applyStackingLadder(pairs)
 
-        pairs.forEach((pair) => {
-          const build = pair.variant === 'curtain' ? buildCurtain : buildExpand
-          cleanups.push(build(pair))
-          built.push(pair)
-        })
-
-        cleanups.push(watchHeights(pairs))
+      pairs.forEach((pair) => {
+        const build = pair.variant === 'curtain' ? buildCurtain : buildExpand
+        cleanups.push(build(pair))
+        built.push(pair)
       })
 
-      // matchMedia reverts every tween, gsap.set and ScrollTrigger made in
-      // here. The classes, quickSetter writes and refresh listeners are ours.
-      return () => {
-        cleanups.forEach((fn) => fn())
-        built.length = 0
-      }
+      cleanups.push(watchHeights(pairs))
+    })
+
+    // matchMedia reverts every tween, gsap.set and ScrollTrigger made in here.
+    // The classes, quickSetter writes and refresh listeners are ours.
+    return () => {
+      cleanups.forEach((fn) => fn())
+      built.length = 0
     }
-  )
+  })
 
   // Call window.sectionRevealDebug() from the console at the exact moment
   // something looks wrong — it dumps the live geometry of every pair.
@@ -575,20 +595,22 @@ function buildExpand(pair) {
   // shorter than the viewport — it stalls part-way up and the base snaps in
   // full view. A viewport is the floor, and the CSS min-height is what normally
   // keeps the two bounds from disagreeing at all.
-  const holdLength = () => {
-    const viewport = window.innerHeight
-    return Math.max(
+  //
+  // `viewport` is the cached window.innerHeight, not a live read — see the note
+  // where it is declared. This runs on every frame of the hold, and on mobile a
+  // live read changes value the moment the address bar retracts.
+  const holdLength = () =>
+    Math.max(
       Math.min(Math.max(distance * viewport, viewport), section.offsetHeight),
       viewport
     )
-  }
 
   if (distance !== DEFAULT_DISTANCE) {
-    const requested = distance * window.innerHeight
+    const requested = distance * viewport
     if (Math.abs(requested - holdLength()) > 1) {
       console.warn(
         `[section-reveal] data-section-reveal-distance="${distance}" was clamped to ${(
-          holdLength() / window.innerHeight
+          holdLength() / viewport
         ).toFixed(
           2
         )} viewports — it cannot be under 1, or over this section's own height (make the section taller to allow a longer reveal).`,
@@ -783,8 +805,7 @@ function numberAttr(element, attribute, fallback) {
 // section is copied onto the section itself: guaranteed opaque, and identical to
 // look at, since it is the same colour that was being seen through it.
 //
-// A gsap.set, so the matchMedia context takes it back off below 992px or under
-// reduced motion.
+// A gsap.set, so the matchMedia context takes it back off under reduced motion.
 function ensureOpaque(section) {
   const { gsap } = window
   const own = getComputedStyle(section)

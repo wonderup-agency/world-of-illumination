@@ -42,6 +42,15 @@ export default function () {
 
   if (gsap && ScrollTrigger) {
     gsap.registerPlugin(ScrollTrigger)
+
+    // Mobile browsers fire `resize` every time the address bar slides in or out
+    // during a scroll, and that is a height-only change. Without this,
+    // ScrollTrigger re-measures the whole page mid-scroll and every scrub-driven
+    // effect visibly jumps. Set here rather than per component because more than
+    // one now runs below 992px (guests, section-reveal). Same address-bar quirk
+    // marquee.js guards against with its own width check.
+    ScrollTrigger.config({ ignoreMobileResize: true })
+
     lenis.on('scroll', ScrollTrigger.update)
     gsap.ticker.add((time) => lenis.raf(time * 1000))
     gsap.ticker.lagSmoothing(0)
