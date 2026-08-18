@@ -1,0 +1,32 @@
+/* Collapsed nav menu (<= 991px).
+
+   Webflow already gives .nav_menu-inner `overflow: auto`, but nothing in the
+   chain has a bounded height, and `auto` only produces a scroller on a box
+   whose height is limited. Opening a dropdown switches its list to
+   `position: static` at this breakpoint, so it pushes the menu taller than the
+   screen — and since .nav_component is `position: fixed`, page scroll can't
+   reveal the overflow either, while .nav_menu's `overflow: hidden` clips it.
+   Result before this file: links that simply couldn't be reached.
+
+   --nav-menu-max-height is measured live in global.js (the menu's own distance
+   from the top of the viewport is set in Webflow and can change there). The
+   calc() is only the fallback for the frames before JS has measured. */
+
+@media screen and (max-width: 991px) {
+  .nav_component .nav_menu-inner {
+    max-height: var(--nav-menu-max-height, calc(100svh - 9rem));
+    overflow-y: auto;
+    /* Stop the scroll from chaining to the page once the menu hits its end. */
+    overscroll-behavior: contain;
+  }
+
+  /* Nested location sub-dropdowns fly out to the right (`left: 100%`) by
+     design on desktop. Inside the collapsed menu that lands outside
+     .nav_menu, which clips it (`overflow: hidden`), so the flyout was
+     invisible — stack it in flow under its own toggle instead. */
+  .nav_component .nav_subdropdown_list-wrapper.w--open {
+    position: static;
+    inset: auto;
+    width: 100%;
+  }
+}
