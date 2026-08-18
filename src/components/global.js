@@ -25,13 +25,6 @@ const NAV_MENU_SELECTOR = '.nav_component .nav_menu-inner'
 // with the bottom of the screen.
 const NAV_MENU_BOTTOM_GAP = 24
 
-// Lenis is desktop-only. On touch devices it adds nothing — touch scrolling is
-// native either way with syncTouch off — while still owning programmatic
-// scrolls and feeding ScrollTrigger, which is exactly where mobile scroll bugs
-// come from. Matching on pointer type rather than a width query keeps a phone
-// consistent when it is rotated into landscape (> 767px wide, still a phone).
-const TOUCH_DEVICE = '(pointer: coarse)'
-
 // Where the nav collapses into the hamburger menu (Webflow's own
 // data-collapse="medium" on .nav_component).
 const NAV_COLLAPSED = '(max-width: 991px)'
@@ -54,7 +47,6 @@ export default function () {
   const reducedMotion = window.matchMedia(
     '(prefers-reduced-motion: reduce)'
   ).matches
-  const touchDevice = window.matchMedia(TOUCH_DEVICE).matches
 
   setupAnchorScroll(reducedMotion)
   setupCollapsedNavMenu()
@@ -79,11 +71,15 @@ export default function () {
     window.addEventListener('load', () => ScrollTrigger.refresh())
   }
 
-  // No Lenis on touch devices or under reduced motion. Everything above still
-  // runs: the anchor offset falls back to window.scrollTo, and every
-  // scroll-driven component reads native scroll position instead of a smoothed
-  // one.
-  if (reducedMotion || touchDevice) return
+  // Reduced motion is the only opt-out. Turning Lenis off on touch was tried
+  // and reverted: section-reveal holds the hero still with a per-frame
+  // counter-translate, and it needs ScrollTrigger to update in the same frame
+  // as the scroll that moved the page — which is exactly what
+  // lenis.on('scroll', ScrollTrigger.update) below gives it. Without Lenis that
+  // write lands a frame late and the held hero visibly shakes while scrolling.
+  // Everything above still runs under reduced motion: the anchor offset falls
+  // back to window.scrollTo.
+  if (reducedMotion) return
 
   // autoRaf: false — Lenis is driven by GSAP's ticker below, not its own loop.
   const lenis = new Lenis({ lerp: 0.08, smoothWheel: true, autoRaf: false })
@@ -123,7 +119,7 @@ function setupCollapsedNavMenu() {
   const button = nav.querySelector('.w-nav-button')
 
   // Lenis owns the wheel globally, so without this it scrolls the page behind
-  // the menu instead of the menu itself. No-op on touch, where Lenis is off.
+  // the menu instead of the menu's own scroller.
   menu.setAttribute('data-lenis-prevent', '')
 
   let queued = false
