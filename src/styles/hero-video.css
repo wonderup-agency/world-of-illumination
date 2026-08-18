@@ -1,0 +1,27 @@
+/* hero-video — structural CSS
+
+   The hero video fills its box by cropping (object-fit) instead of being
+   over-sized and re-centred with a transform.
+
+   Why this matters on the hero and nowhere else: section-reveal holds the whole
+   <header> still with a per-frame transform, so the video's own
+   `transform: translate(-50%)` becomes a nested transform that is re-resolved on
+   every one of those frames. That offset is half the video's own width — a
+   fractional pixel on any odd width — and a composited video layer sitting on a
+   sub-pixel boundary gets re-sampled every frame. On mobile that reads as the
+   video trembling while you scroll, while the hero text beside it (no transform
+   of its own) sits perfectly still. object-fit needs no transform at all, so
+   there is nothing left to re-resolve.
+
+   Scoped to the attribute rather than to .global_video, which is a generic class
+   used by other videos across the site — see CONVENTIONS.md on bare class
+   selectors in the shared stylesheet. */
+
+video[data-component='hero-video'] {
+  inset: 0;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  object-fit: cover;
+  transform: none;
+}

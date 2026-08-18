@@ -3,6 +3,8 @@ Component: hero-video
 Webflow attribute: data-component="hero-video"
 */
 
+import '../styles/hero-video.css'
+
 // How far outside the viewport the video may be before we start loading it.
 const ROOT_MARGIN = '200px'
 
