@@ -76,3 +76,12 @@ readable. Everything visual stays in Webflow.
     clip-path: none !important;
   }
 }
+
+/* The expand's hold on touch — see STICKY_HOLD in section-reveal.js. The JS
+   writes `top` inline, as the offset the base has to freeze at, and adds this
+   class only while the reveal is running. Declared after the --base rule above
+   on purpose: both are single-class selectors, so source order is what lets
+   this one win over its `position: relative`. */
+.section-reveal--stuck {
+  position: sticky;
+}

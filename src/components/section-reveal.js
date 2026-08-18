@@ -69,7 +69,26 @@ const CLASS = {
   held: 'section-reveal--held',
   rising: 'section-reveal--rising',
   base: 'section-reveal--base',
+  stuck: 'section-reveal--stuck',
 }
+
+// Where the expand's hold switches from a per-frame transform to position:
+// sticky.
+//
+// A touch browser scrolls on the compositor thread and hands the scroll to JS
+// out of step with it, so a transform written per frame to keep something still
+// always lands a frame or more late. Anything that moves *with* the scroll
+// absorbs that lag invisibly; anything that has to stay *still* against it puts
+// the lag on screen as a shake — which is what the held hero does on an iPhone,
+// most visibly in the video inside it, since a video layer re-samples on every
+// sub-pixel offset it is handed. ScrollTrigger's own pin sidesteps the same
+// problem the same way, by switching to position: fixed on touch rather than
+// transforms.
+//
+// Sticky is resolved by the browser in the same pass as the scroll, so it
+// cannot lag by construction. Kept off desktop deliberately: there the
+// transform hold is exact, Lenis-smooth and already proven on this site.
+const STICKY_HOLD = '(pointer: coarse)'
 
 // window.innerHeight, cached — and on mobile that is not a constant. It grows by
 // the height of the address bar the moment that retracts during a scroll, which
@@ -626,14 +645,44 @@ function buildExpand(pair) {
   // trigger's own progress, never the scrubbed playhead: EXPAND_SCRUB may lag
   // the growth, but the hold has to be exact or the base drifts.
   const setBase = gsap.quickSetter(partner, 'y', 'px')
+  const stickyHold = window.matchMedia(STICKY_HOLD).matches
   let trigger = null
+  let stuck = false
+
+  // The sticky half of the hold — see STICKY_HOLD. `top` is whatever the base's
+  // own offset from the top of the viewport is on the frame the reveal starts,
+  // so it freezes exactly where it already is. Pinning it to `top: 0` instead
+  // would be right only when the pair happens to be the first thing on the
+  // page, and a visible jump anywhere else.
+  //
+  // Layout is untouched either way: a sticky element keeps its space in flow,
+  // exactly like a transformed one, so the rest of the page reads the same
+  // geometry under both paths.
+  const stick = (on) => {
+    if (on === stuck) return
+    stuck = on
+    if (on) {
+      // Whole pixels: the one thing on screen that is meant to be perfectly
+      // still is also the one thing worth having on the pixel grid.
+      partner.style.top = `${Math.round(partner.getBoundingClientRect().top)}px`
+      partner.classList.add(CLASS.stuck)
+    } else {
+      partner.classList.remove(CLASS.stuck)
+      partner.style.top = ''
+    }
+  }
 
   // `self` when ScrollTrigger calls it, the stored instance when the global
   // refresh event does (that one passes no arguments) — and neither on the very
   // first callback, which can fire while the timeline is still being created.
   const renderHold = (self) => {
     const st = self || trigger
-    setBase(st && st.isActive ? holdLength() * st.progress : 0)
+    const active = !!(st && st.isActive)
+    if (stickyHold) {
+      stick(active)
+      return
+    }
+    setBase(active ? holdLength() * st.progress : 0)
   }
 
   // Unlike the curtain, nothing here has to sit still against the viewport by
@@ -712,7 +761,7 @@ function buildExpand(pair) {
 
   // Same reason as the curtain: a refresh mid-reveal has to measure the base
   // where it actually lives, not where the hold has it parked.
-  const zeroBase = () => setBase(0)
+  const zeroBase = () => (stickyHold ? stick(false) : setBase(0))
   ScrollTrigger.addEventListener('refreshInit', zeroBase)
   ScrollTrigger.addEventListener('refresh', renderHold)
 
@@ -731,6 +780,7 @@ function buildExpand(pair) {
     ScrollTrigger.removeEventListener('refresh', renderHold)
     section.classList.remove(CLASS.rising)
     partner.classList.remove(CLASS.base)
+    stick(false)
     gsap.set(section, { clearProps: 'clipPath,willChange' })
     // quickSetter writes bypass the tween system, so the context has no record
     // of them to revert.
