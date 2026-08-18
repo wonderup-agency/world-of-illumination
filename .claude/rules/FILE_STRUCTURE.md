@@ -11,7 +11,8 @@
 │   │   ├── horizontal-scroll.js   Osmo-style horizontal scroll + curtain pin effect
 │   │   ├── horizontal-scroll.css  Structural CSS for the horizontal-scroll component
 │   │   ├── image-grow.js          Sticky-pinned section with a clip-path image grow-to-fullscreen
-│   │   └── image-grow.css         Structural CSS for the image-grow component
+│   │   ├── image-grow.css         Structural CSS for the image-grow component
+│   │   └── show-gallery-marquee.js Mobile-only infinite marquee for the CMS show-images gallery
 │   └── pages/
 │       └── .gitkeep               Per-page standalone bundles go here
 │

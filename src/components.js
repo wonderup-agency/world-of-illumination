@@ -14,6 +14,10 @@
 
 export default [
   {
+    selector: "[data-component='show-gallery-marquee']",
+    importFn: () => import('./components/show-gallery-marquee.js'),
+  },
+  {
     selector: "[data-component='location-year-filter']",
     importFn: () => import('./components/location-year-filter.js'),
   },

@@ -1,0 +1,56 @@
+/*
+show-gallery-marquee — mobile-only (<=767px) infinite horizontal marquee for
+the CMS multiphotos gallery (.show_gallery-list). The real Webflow grid stays
+in the DOM at all times; show-gallery-marquee.js builds a separate cloned
+track next to it, and this file only ever shows one or the other, switched by
+the .is-gallery-marquee class the JS adds/removes on breakpoint change. Above
+767px, or if the JS class is never added, nothing here applies -- the
+original grid renders exactly as Webflow built it.
+*/
+
+[data-component='show-gallery-marquee'] .show-gallery-marquee_track {
+  display: none;
+}
+
+[data-component='show-gallery-marquee'].is-gallery-marquee {
+  overflow: hidden;
+}
+
+[data-component='show-gallery-marquee'].is-gallery-marquee
+  > .show_gallery-list {
+  display: none;
+}
+
+[data-component='show-gallery-marquee'].is-gallery-marquee
+  .show-gallery-marquee_track {
+  display: flex;
+  width: max-content;
+  animation: show-gallery-marquee-scroll linear infinite;
+}
+
+[data-component='show-gallery-marquee'] .show-gallery-marquee_item {
+  flex: 0 0 auto;
+  width: 11rem;
+  height: 11rem;
+  margin-right: 0.75rem;
+  overflow: hidden;
+}
+
+[data-component='show-gallery-marquee'] .show-gallery-marquee_item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+@keyframes show-gallery-marquee-scroll {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-component='show-gallery-marquee'] .show-gallery-marquee_track {
+    animation: none;
+  }
+}
