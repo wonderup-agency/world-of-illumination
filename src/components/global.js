@@ -51,6 +51,7 @@ export default function () {
   setupAnchorScroll(reducedMotion)
   setupCollapsedNavMenu()
   setupCollapsedNavDropdowns(reducedMotion)
+  setupFinsweetListResize()
 
   const { gsap, ScrollTrigger } = window
 
@@ -71,15 +72,29 @@ export default function () {
     window.addEventListener('load', () => ScrollTrigger.refresh())
   }
 
-  // Reduced motion is the only opt-out. Turning Lenis off on touch was tried
-  // and reverted: section-reveal holds the hero still with a per-frame
-  // counter-translate, and it needs ScrollTrigger to update in the same frame
-  // as the scroll that moved the page — which is exactly what
-  // lenis.on('scroll', ScrollTrigger.update) below gives it. Without Lenis that
-  // write lands a frame late and the held hero visibly shakes while scrolling.
-  // Everything above still runs under reduced motion: the anchor offset falls
-  // back to window.scrollTo.
-  if (reducedMotion) return
+  // Reduced motion and Finsweet pagination are the only opt-outs. Turning
+  // Lenis off on touch was tried and reverted: section-reveal holds the hero
+  // still with a per-frame counter-translate, and it needs ScrollTrigger to
+  // update in the same frame as the scroll that moved the page — which is
+  // exactly what lenis.on('scroll', ScrollTrigger.update) below gives it.
+  // Without Lenis that write lands a frame late and the held hero visibly
+  // shakes while scrolling. Everything above still runs under either
+  // opt-out: the anchor offset falls back to window.scrollTo.
+  //
+  // fs-list-load="pagination" (currently the Blog page) re-renders its items
+  // in place, and a trailing page can be dramatically shorter than the one
+  // the visitor was just on (e.g. 2 posts vs. 8-9). Lenis keeps its own
+  // scroll-position state independent of the native document, and syncing
+  // that state back up every time Finsweet swaps the content (see
+  // setupFinsweetListResize) proved unreliable in practice — the visitor
+  // could still end up stranded past the new, shorter page's real content.
+  // The native scroll the browser falls back to here already clamps itself
+  // correctly when the document shrinks, so skipping Lenis sidesteps the
+  // problem entirely instead of chasing it.
+  const hasFinsweetPagination = document.querySelector(
+    '[fs-list-load="pagination"]'
+  )
+  if (reducedMotion || hasFinsweetPagination) return
 
   // autoRaf: false — Lenis is driven by GSAP's ticker below, not its own loop.
   const lenis = new Lenis({ lerp: 0.08, smoothWheel: true, autoRaf: false })
@@ -223,6 +238,54 @@ function setupCollapsedNavDropdowns(reducedMotion) {
 
     observer.observe(list, { attributeFilter: ['class'] })
   })
+}
+
+/**
+ * Finsweet's List Load re-renders items in place on every page click/load —
+ * no full page reload — which can leave the document a different height
+ * than what ScrollTrigger (and, on any page still running Lenis) measured
+ * last. `fs-list-load="pagination"` pages skip Lenis entirely for exactly
+ * this reason (see the opt-out above) since keeping its scroll state in
+ * sync with Finsweet's re-renders proved unreliable — this hook is what's
+ * left for that case (ScrollTrigger.refresh() only) and is the full fix for
+ * any other Finsweet List Load mode (e.g. "load more") that still runs with
+ * Lenis active. Uses Finsweet's own documented hook API rather than a
+ * MutationObserver on the list, since resize()/refresh() don't mutate the
+ * DOM themselves and so can't trigger the kind of feedback loop a
+ * DOM-mutation observer risks here.
+ */
+function setupFinsweetListResize() {
+  window.FinsweetAttributes ||= []
+  window.FinsweetAttributes.push([
+    'list',
+    (listInstances) => {
+      listInstances.forEach((listInstance) => {
+        listInstance.addHook('afterRender', (renderedItems) => {
+          // Wait a frame so the browser has actually laid out the new
+          // (possibly much shorter) content before measuring it — reading
+          // synchronously inside the hook can still see the outgoing page's
+          // height.
+          requestAnimationFrame(() => {
+            window.ScrollTrigger?.refresh()
+
+            const lenis = window.lenis
+            if (!lenis) return
+            lenis.resize()
+
+            // resize() recalculates lenis.limit (the new max scroll) but
+            // doesn't reliably pull the current position back inside it —
+            // if the visitor was scrolled past where the new, shorter page
+            // ends, force it back to the real bottom instead of leaving it
+            // stranded past the footer.
+            if (lenis.scroll > lenis.limit) {
+              lenis.scrollTo(lenis.limit, { immediate: true })
+            }
+          })
+          return renderedItems
+        })
+      })
+    },
+  ])
 }
 
 function setupAnchorScroll(reducedMotion) {
