@@ -3,7 +3,8 @@ Component: horizontal-scroll
 Webflow attribute: data-component="horizontal-scroll"
 
 Pins the section and reveals its panels as the user scrolls vertically
-(Osmo-style). Two modes, chosen automatically by the markup:
+(Osmo-style). Works with any number of panels (2+) — nothing here is
+hardcoded to a count. Two modes, chosen automatically by the markup:
 
 - Train mode (default): all panels translate left together.
 - Curtain mode (when a leading panel has data-horizontal-scroll-pin): the
@@ -11,6 +12,16 @@ Pins the section and reveals its panels as the user scrolls vertically
   the right over it like a curtain, then the remaining panels scroll
   horizontally as a normal train. Put data-horizontal-scroll-pin on the first
   panel to keep the first one pinned.
+
+Optional per-instance attributes on the wrapper (all optional, all fall back
+to the original 1:1 behavior when omitted):
+
+- data-horizontal-scroll-distance="1.5" — scroll-distance multiplier. Above 1,
+  more vertical scroll is needed to cover the same horizontal travel (slower,
+  more scroll "invested" per panel); below 1, less. Default 1.
+- data-horizontal-scroll-scrub="0.3" — lag (in seconds) between scroll input
+  and panel movement, for a softer, less mechanical feel. Default: no lag
+  (scrub: true, 1:1 with scroll).
 
 GSAP + ScrollTrigger are expected to be loaded globally (window.gsap /
 window.ScrollTrigger) via CDN in Webflow — they are NOT bundled here.
@@ -20,6 +31,9 @@ import './horizontal-scroll.css'
 
 const PANEL_SELECTOR = '[data-horizontal-scroll-panel]'
 const PIN_ATTR = 'data-horizontal-scroll-pin'
+const DEFAULT_DISTANCE = 1
+
+const vw = () => window.innerWidth
 
 /**
  * @param {HTMLElement[]} elements - All elements matching [data-component='horizontal-scroll']
@@ -72,11 +86,12 @@ export default function (elements) {
 
         const moving = panels.filter((p) => !p.hasAttribute(PIN_ATTR))
         const pinned = panels.filter((p) => p.hasAttribute(PIN_ATTR))
+        const tuning = readTuning(section)
 
         if (pinned.length && moving.length) {
-          cleanups.push(buildCurtain(section, pinned, moving))
+          cleanups.push(buildCurtain(section, pinned, moving, tuning))
         } else {
-          buildTrain(section, panels)
+          buildTrain(section, panels, tuning)
         }
       })
 
@@ -86,11 +101,27 @@ export default function (elements) {
     }
   )
 
+  // Reads the optional per-instance overrides off the wrapper (see header
+  // comment). Missing/invalid attributes fall back to the original behavior.
+  function readTuning(section) {
+    const distance = parseFloat(
+      section.getAttribute('data-horizontal-scroll-distance')
+    )
+    const scrub = parseFloat(
+      section.getAttribute('data-horizontal-scroll-scrub')
+    )
+
+    return {
+      distance: Number.isFinite(distance) ? distance : DEFAULT_DISTANCE,
+      scrub: Number.isFinite(scrub) ? scrub : true,
+    }
+  }
+
   // Curtain: pinned panels become static bases; the rest move inside a single
   // track. The track slides in from the right (curtain over the base), then
   // continues translating left through the remaining panels (train).
   // Returns a teardown that unwraps the track and removes added classes.
-  function buildCurtain(section, pinned, moving) {
+  function buildCurtain(section, pinned, moving, { distance, scrub }) {
     section.classList.add('is-curtain')
     pinned.forEach((p) => p.classList.add('is-base'))
 
@@ -99,7 +130,6 @@ export default function (elements) {
     section.appendChild(track)
     moving.forEach((p) => track.appendChild(p))
 
-    const vw = () => window.innerWidth
     const trainSteps = moving.length - 1
 
     gsap.set(track, { x: vw })
@@ -109,8 +139,8 @@ export default function (elements) {
       scrollTrigger: {
         trigger: section,
         start: 'top top',
-        end: () => '+=' + vw() * moving.length,
-        scrub: true,
+        end: () => '+=' + vw() * moving.length * distance,
+        scrub,
         pin: true,
         invalidateOnRefresh: true,
       },
@@ -130,15 +160,15 @@ export default function (elements) {
 
   // Train: pin the section, translate all panels along X. ease:"none" keeps
   // scroll position and panel position in sync.
-  function buildTrain(section, panels) {
+  function buildTrain(section, panels, { distance, scrub }) {
     gsap.to(panels, {
       x: () => -(section.scrollWidth - window.innerWidth),
       ease: 'none',
       scrollTrigger: {
         trigger: section,
         start: 'top top',
-        end: () => '+=' + (section.scrollWidth - window.innerWidth),
-        scrub: true,
+        end: () => '+=' + (section.scrollWidth - window.innerWidth) * distance,
+        scrub,
         pin: true,
         invalidateOnRefresh: true,
       },
