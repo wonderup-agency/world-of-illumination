@@ -23,6 +23,17 @@ to the original 1:1 behavior when omitted):
   and panel movement, for a softer, less mechanical feel. Default: no lag
   (scrub: true, 1:1 with scroll).
 
+All math is capped at MAX_VIEWPORT (2560px — window.innerWidth is always in
+px, so this constant can't be expressed in rem) instead of the raw viewport
+width — on an ultra-wide monitor or heavy browser zoom-out, window.innerWidth
+can grow large enough that ScrollTrigger's pin measurements drift out of sync
+(browser zoom doesn't always fire a resize event the way actually resizing
+the window does). Beyond MAX_VIEWPORT the panels simply stop growing and stay
+centered instead of chasing an unbounded width. This value is mirrored in
+Webflow on the `horizontal_panel` class's width (`min(100vw, 160rem)` — 160rem
+= 2560px at the standard 16px root) — the two must stay in sync (same
+effective px value), or the CSS panel size and the JS scroll math desync.
+
 GSAP + ScrollTrigger are expected to be loaded globally (window.gsap /
 window.ScrollTrigger) via CDN in Webflow — they are NOT bundled here.
 */
@@ -32,8 +43,9 @@ import './horizontal-scroll.css'
 const PANEL_SELECTOR = '[data-horizontal-scroll-panel]'
 const PIN_ATTR = 'data-horizontal-scroll-pin'
 const DEFAULT_DISTANCE = 1
+const MAX_VIEWPORT = 2560
 
-const vw = () => window.innerWidth
+const vw = () => Math.min(window.innerWidth, MAX_VIEWPORT)
 
 /**
  * @param {HTMLElement[]} elements - All elements matching [data-component='horizontal-scroll']
@@ -162,12 +174,12 @@ export default function (elements) {
   // scroll position and panel position in sync.
   function buildTrain(section, panels, { distance, scrub }) {
     gsap.to(panels, {
-      x: () => -(section.scrollWidth - window.innerWidth),
+      x: () => -(section.scrollWidth - vw()),
       ease: 'none',
       scrollTrigger: {
         trigger: section,
         start: 'top top',
-        end: () => '+=' + (section.scrollWidth - window.innerWidth) * distance,
+        end: () => '+=' + (section.scrollWidth - vw()) * distance,
         scrub,
         pin: true,
         invalidateOnRefresh: true,

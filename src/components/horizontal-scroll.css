@@ -6,6 +6,23 @@
   overflow: hidden;
 }
 
+/* Train mode (no data-horizontal-scroll-pin panel present): every panel
+   must be exactly one viewport wide, side-by-side in the flex row, for the
+   scroll-jack math to line up — capped at 160rem (2560px, mirrors
+   MAX_VIEWPORT in horizontal-scroll.js) instead of a plain 100vw so an
+   ultra-wide monitor or heavy browser zoom-out can't desync the panel size
+   from ScrollTrigger's pin measurements. Scoped by the panel attribute, not
+   a Webflow class, so this applies automatically to ANY future panel added
+   inside the wrapper regardless of its own class — no per-instance Designer
+   setup needed. Height is left out on purpose: still a per-instance design
+   choice, set in Webflow. Curtain mode has its own, more specific rule
+   below and always wins over this one. */
+[data-component='horizontal-scroll']:not(.is-curtain)
+  [data-horizontal-scroll-panel] {
+  width: min(100vw, 160rem);
+  flex: 0 0 100vw;
+}
+
 /* Curtain mode (added by JS): the section becomes a fixed-height stage. */
 [data-component='horizontal-scroll'].is-curtain {
   position: relative;
