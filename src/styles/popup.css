@@ -1,0 +1,79 @@
+[data-component='popup'] {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.3s ease,
+    visibility 0.3s ease;
+}
+
+[data-component='popup'].is-active {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+[data-popup='overlay'] {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+/* The card is whichever direct child isn't the overlay — no specific class
+   name required, so this keeps working no matter what the card div is
+   named in Webflow. */
+[data-component='popup'] > *:not([data-popup='overlay']) {
+  position: relative;
+  z-index: 1;
+  max-width: 40rem;
+  width: 100%;
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+  transform: scale(0.95);
+  transition: transform 0.3s ease;
+}
+
+[data-component='popup'].is-active > *:not([data-popup='overlay']) {
+  transform: scale(1);
+}
+
+[data-popup='close'] {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 2;
+  cursor: pointer;
+}
+
+/* Default look for the "✕" button popup.js creates on its own when no
+   [data-popup="close"] element exists in the Webflow markup. Scoped to the
+   button tag so it never overrides a custom close element built in Webflow. */
+button[data-popup='close'] {
+  appearance: none;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: inherit;
+  font-size: 1.25rem;
+  line-height: 1;
+  padding: 0.5rem;
+  transition: opacity 0.2s ease;
+}
+
+button[data-popup='close']:hover {
+  opacity: 0.7;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-component='popup'],
+  [data-component='popup'] > *:not([data-popup='overlay']) {
+    transition: none;
+  }
+}

@@ -14,6 +14,10 @@
 
 export default [
   {
+    selector: "[data-component='popup']",
+    importFn: () => import('./components/popup.js'),
+  },
+  {
     selector: "[data-component='show-gallery-marquee-v2']",
     importFn: () => import('./components/show-gallery-marquee-v2.js'),
   },
