@@ -66,14 +66,26 @@ Note `data-component="popup"` and `data-popup="overlay"` both sit on direct
 children of the same wrapper as the card — the overlay must be a sibling of
 the card, not a parent or a child of it.
 
-Optional attribute on the wrapper:
+Optional attributes on the wrapper:
 
 - `data-popup-delay="600"` — milliseconds to wait after the component loads
   before showing the popup (default `600`, see `DEFAULT_DELAY`).
+- `data-popup-start-date="2026-09-04"` / `data-popup-end-date="2026-09-13"` —
+  date window (both optional, independent — set one, both, or neither). Format
+  is always `YYYY-MM-DD`. Outside the window the popup doesn't show at all
+  (not even the overlay/close button get set up) — same as if the component
+  weren't on the page. Leave both empty/absent for the original
+  always-on behavior. The end date counts through 23:59:59 of that day, not
+  just its midnight — see Notes.
 
 ## Behavior
 
-- **Init**: Strips a `hide` class off `[data-popup="overlay"]` if present (see
+- **Init**: If `data-popup-start-date`/`data-popup-end-date` are set and
+  "now" falls outside that window, the component does nothing at all for
+  that instance — no overlay/close-button setup, no listeners, no popup —
+  same as if `data-component="popup"` weren't there. With both empty/absent,
+  this check always passes (original always-on behavior). Otherwise, strips
+  a `hide` class off `[data-popup="overlay"]` if present (see
   Notes — Designer-only escape hatch, not needed on the live site), then makes
   sure a close trigger exists: if no `[data-popup="close"]` element is found,
   it creates a `<button>` one itself and appends it to the card (whichever
@@ -166,3 +178,21 @@ Elements matching `[data-component='popup']` must contain:
   the width here, not in Webflow, if it ever needs to be different; a
   Designer-side width/max-width change on the card class will have no visible
   effect.
+- **Date window parsing (`parseLocalDate`)**: `data-popup-start-date`/
+  `data-popup-end-date` are parsed as a *local* date (midnight in the
+  visitor's own timezone) via manual `YYYY-MM-DD` splitting — deliberately
+  not `new Date("YYYY-MM-DD")`, which the JS spec parses as UTC midnight and
+  would silently shift the cutoff by several hours depending on the
+  visitor's timezone (this project's shows tour multiple US states/
+  timezones). A malformed or partial value (wrong format, typo) parses to
+  `null` and is treated as "no limit" on that side rather than crashing or
+  permanently hiding the popup. The end date's comparison is built up to
+  `23:59:59.999` of that day so the last day is fully included, not cut off
+  at its midnight.
+- **Component is a Webflow Component now**: added 2026-09-04. Custom
+  attributes (including the two date ones above and `data-popup-delay`) are
+  set the same way as on any element — inside the component definition, or
+  bound to a Text-type component property so each instance can have its own
+  value without entering "Edit component" mode. Ask before restructuring
+  the component's props — that's a Designer-side decision, not something
+  this file drives.
