@@ -59,6 +59,10 @@ Components are registered in `src/components.js` as an array of `{ selector, imp
 }
 ```
 
+### Sharing a selector across two components
+
+An element can only carry one `data-component` attribute, but the registry itself has no such limit — `main.js` runs `querySelectorAll(selector)` independently per registry entry, so two entries can point at the identical selector and both load against the same elements with zero conflict. Use this when a second, independent behavior needs to react to the same wrapper without touching the first component's file at all — typically a breakpoint-exclusive counterpart (e.g. [`horizontal-scroll-mobile`](./components/horizontal-scroll-mobile.md), which activates only where [`horizontal-scroll`](./components/horizontal-scroll.md)'s own disable attribute says the desktop effect is off). Keep the two components' activation conditions provably mutually exclusive (matching `gsap.matchMedia()` breakpoints, or reading the same gating attribute) so they never both act on the same element at once.
+
 ## CSS
 
 - Import CSS directly in JS files: `import './styles/component.css'`

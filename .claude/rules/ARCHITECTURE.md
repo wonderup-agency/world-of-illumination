@@ -39,6 +39,8 @@ Key design decisions:
 
 An array of `{ selector, importFn }` objects. The selector uses `data-component` attribute matching. The `importFn` is a dynamic import function for code splitting.
 
+Two entries can share the exact same selector — `main.js` queries and loads each registry entry independently, with no dedup — so a second, fully independent component can be layered onto the same wrapper (e.g. a breakpoint-exclusive counterpart) without ever touching the first component's file. See "Sharing a selector across two components" in `CONVENTIONS.md`.
+
 ### Loading (`src/main.js`)
 
 1. Queries DOM for each selector

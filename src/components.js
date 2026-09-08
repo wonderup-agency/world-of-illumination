@@ -113,4 +113,12 @@ export default [
     selector: "[data-component='horizontal-scroll']",
     importFn: () => import('./components/horizontal-scroll.js'),
   },
+  // Deliberately the SAME selector as the entry above — two independent
+  // components layered on the same element, one active on desktop (≥992px),
+  // the other on tablet/mobile. See ARCHITECTURE.md → Component Registry and
+  // horizontal-scroll-mobile.md for why this is safe.
+  {
+    selector: "[data-component='horizontal-scroll']",
+    importFn: () => import('./components/horizontal-scroll-mobile.js'),
+  },
 ]

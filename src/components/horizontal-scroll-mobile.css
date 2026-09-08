@@ -1,0 +1,93 @@
+/* horizontal-scroll-mobile component
+   Structural CSS for the tablet/mobile crossfade fallback. Everything here is
+   scoped either under .horizontal-scroll-mobile_stage (a plain div JS
+   creates only while active) or under the wrapper's own .is-mobile-fade
+   class (added/removed by JS alongside the stage) — nothing here can affect
+   the shared [data-component='horizontal-scroll'] wrapper in any other
+   state. */
+
+/* horizontal-scroll.css sets overflow: hidden on this wrapper unconditionally
+   (needed for desktop's horizontal-jack, to clip the horizontally
+   overflowing train of panels). Confirmed live (via a console probe) that
+   this alone makes the browser treat the wrapper as the stage's scrolling
+   container for position: sticky purposes — and since the wrapper itself
+   never actually scrolls (it just auto-sizes to fit its own content), the
+   sticky stage inside it never receives a scroll offset and just sits
+   still, moving in lockstep with the page instead of holding on screen.
+   Overriding it back to visible only while this component's stage exists
+   restores real page scroll as the sticky reference — safe, since desktop's
+   horizontal overflow never exists at this breakpoint (that component
+   doesn't run here at all). */
+[data-component='horizontal-scroll'].is-mobile-fade {
+  overflow: visible;
+}
+
+/* The stage — not the wrapper itself — is what's sticky, and it's locked to
+   exactly one screen tall (100svh — the "small" viewport unit, i.e. the size
+   with mobile browser chrome visible, so it can never be taller than what's
+   actually on screen; 100vh first as a fallback for browsers without svh
+   support). Two earlier bugs came from getting this wrong: sizing the row to
+   auto (tallest panel's own content) left shorter panels not filling the
+   screen and let the sticky hold run far longer than intended; and making
+   the WRAPPER itself sticky (instead of this inner stage) meant its
+   containing block was the wrapper's real parent — which, on the page, wraps
+   every section after this one too — so the hold didn't release until
+   scrolling past all of them. The stage is a local, two-child box (itself +
+   the JS-appended spacer, both direct children of the wrapper) specifically
+   so its sticky hold is bounded to just this component's own scroll range. */
+[data-component='horizontal-scroll'] .horizontal-scroll-mobile_stage {
+  display: grid;
+  grid-template-rows: 100vh;
+  grid-template-rows: 100svh;
+  position: sticky;
+  top: 0;
+  overflow: hidden;
+}
+
+/* Each panel fills that single, fixed-height row exactly (grid-area stacks
+   them into the same cell so they overlap instead of flowing one after
+   another) and centers its own content vertically as a block — the panels'
+   own desktop-tuned internal alignment (full-height_component's own
+   position/height tricks, image-block_component's upper/bottom-right
+   variants) was never designed against a fixed-navbar, one-screen box, and
+   left content sitting too high (even hidden behind the navbar) instead of
+   centered. overflow-y: auto is a safety net (same idea as popup.css's card
+   scroll) for a panel whose content still doesn't fit one screen — it
+   scrolls internally instead of being cut off. */
+[data-component='horizontal-scroll'] .horizontal-scroll-mobile_stage [data-horizontal-scroll-panel] {
+  grid-area: 1 / 1;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  display: flex !important;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Text panels (full-height_component) carry a "Spacer / Section" element
+   before and after their real content — normal page-flow breathing room
+   between real sections, sized off a Webflow variable. Inside a fixed
+   one-screen box that spacing has nowhere to go: it just pushes the
+   centered heading up and out of view. Not needed here at all, so it's
+   zeroed out. */
+[data-component='horizontal-scroll'] .horizontal-scroll-mobile_stage [data-horizontal-scroll-panel] .section_spacer {
+  height: 0 !important;
+}
+
+/* image-block_component's own upper/bottom-right variants push content to
+   an edge — tuned for desktop's un-pinned panel height, where nothing fixed
+   overlaps the top. On a fixed one-screen mobile box, "upper" can end up
+   hidden behind the fixed navbar and "bottom-right" cramped against the
+   bottom edge. Centered, uniformly, regardless of variant, avoids both. */
+[data-component='horizontal-scroll'] .horizontal-scroll-mobile_stage [data-horizontal-scroll-panel] .image-block_component {
+  justify-content: center !important;
+  align-items: center !important;
+  padding: 2rem !important;
+  text-align: center;
+}
+
+/* Spacer JS appends right after the stage — gives the sticky stage scroll
+   room to hold across while panels crossfade underneath it. */
+.horizontal-scroll-mobile_spacer {
+  width: 100%;
+}
