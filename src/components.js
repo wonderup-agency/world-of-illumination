@@ -14,6 +14,10 @@
 
 export default [
   {
+    selector: "[data-component='floating-parallax']",
+    importFn: () => import('./components/floating-parallax.js'),
+  },
+  {
     selector: "[data-component='image-parallax']",
     importFn: () => import('./components/image-parallax.js'),
   },

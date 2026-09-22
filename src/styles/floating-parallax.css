@@ -1,0 +1,8 @@
+/* floating-parallax — desktop-only perf hint. All positioning stays exactly
+   as Webflow laid it out; this only promotes the drifting images to their
+   own compositor layer while the effect is actually running. */
+@media screen and (min-width: 992px) {
+  [data-component='floating-parallax'].is-floating-parallax [data-speed] {
+    will-change: transform;
+  }
+}

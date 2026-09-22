@@ -59,6 +59,23 @@ Components are registered in `src/components.js` as an array of `{ selector, imp
 }
 ```
 
+### Reading another component's ScrollTrigger read-only, via `containerAnimation`
+
+A component that needs to sync a nested effect to a *different* component's
+own scroll progress (not the page's vertical scroll) can find that other
+component's ScrollTrigger via `ScrollTrigger.getAll().find(st => st.trigger === el)`
+and pass its `.animation` as `containerAnimation` on a new, separate
+ScrollTrigger — GSAP's own documented mechanism for this. This reads the other
+component's public ScrollTrigger instance only; it never imports, edits, or
+depends on that component's internals, so the two stay fully decoupled (the
+host component can be deleted/rewritten and this only logs a warning, it
+never throws). Introduced by [`floating-parallax`](./components/floating-parallax.md),
+which syncs its images' drift to [`horizontal-scroll`](./components/horizontal-scroll.md)'s
+own horizontal progress instead of a vertical scroll trigger — see that doc's
+Notes for the full reasoning. Because the host's ScrollTrigger must already
+exist when this runs, defer setup to `window`'s `load` event (see
+`image-parallax.md`'s note on the same pattern) rather than running on init.
+
 ### Sharing a selector across two components
 
 An element can only carry one `data-component` attribute, but the registry itself has no such limit — `main.js` runs `querySelectorAll(selector)` independently per registry entry, so two entries can point at the identical selector and both load against the same elements with zero conflict. Use this when a second, independent behavior needs to react to the same wrapper without touching the first component's file at all — typically a breakpoint-exclusive counterpart (e.g. [`horizontal-scroll-mobile`](./components/horizontal-scroll-mobile.md), which activates only where [`horizontal-scroll`](./components/horizontal-scroll.md)'s own disable attribute says the desktop effect is off). Keep the two components' activation conditions provably mutually exclusive (matching `gsap.matchMedia()` breakpoints, or reading the same gating attribute) so they never both act on the same element at once.
