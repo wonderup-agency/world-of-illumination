@@ -1,0 +1,19 @@
+/* image-parallax — simple vertical scroll parallax for a single full-bleed
+   image. Desktop only (>=992px); below that this file changes nothing and
+   the section renders in plain Webflow flow, exactly as designed.
+
+   No aspect-ratio, width or height set here on purpose — the image keeps
+   its exact natural Webflow size. image-parallax.js sets overflow: hidden
+   directly on the image's own parent at runtime (not a class name here),
+   so this component works on any wrapper > img structure, not just one
+   specific Webflow class. See image-parallax.js for why an earlier version
+   that forced a fixed frame ratio kept producing a badly-cropped image. */
+
+@media screen and (min-width: 992px) {
+  /* Promotes the image to its own compositor layer up front, since it's
+     transformed every scroll frame while active — avoids a first-frame
+     layer-creation jank the moment the scroll trigger activates. */
+  [data-component='image-parallax'] img {
+    will-change: transform;
+  }
+}

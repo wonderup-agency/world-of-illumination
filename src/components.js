@@ -14,6 +14,10 @@
 
 export default [
   {
+    selector: "[data-component='image-parallax']",
+    importFn: () => import('./components/image-parallax.js'),
+  },
+  {
     selector: "[data-component='popup']",
     importFn: () => import('./components/popup.js'),
   },

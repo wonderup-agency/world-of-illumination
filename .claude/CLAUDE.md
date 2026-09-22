@@ -42,6 +42,7 @@ All docs in `.claude/rules/` directory:
 - `CONVENTIONS.md` — Code standards, naming, file organization
 - `ARCHITECTURE.md` — System design, data flow, module responsibilities
 - `FILE_STRUCTURE.md` — Where things belong
+- `ANIMATIONS.md` — Catalog of reusable, content-independent animation components (drop-in, no code changes needed)
 
 **Build & tooling:**
 
@@ -63,6 +64,7 @@ All docs in `.claude/rules/` directory:
 - `scripts/setup.js`, `create-component.js`, `create-page.js` → `SCRIPTS.md`
 - `src/main.js`, `src/components.js`, `src/config.js`, `src/components/global.js` → `ARCHITECTURE.md`
 - New pattern or naming rule introduced → `CONVENTIONS.md`
+- New reusable, content-independent animation component added or removed → `ANIMATIONS.md`
 - Files/directories added, moved, or removed → `FILE_STRUCTURE.md`
 - Dependency added, replaced, or removed → `TECH_STACK.md`
 - New doc added to `.claude/rules/` → add it to the "Project Documentation" list above and this section

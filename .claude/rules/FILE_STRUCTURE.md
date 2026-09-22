@@ -31,6 +31,11 @@
 │   ├── styles.css                 Extracted CSS
 │   └── *.js                       Page bundles and code-split chunks
 │
+├── docs/                          Standalone project text docs (not auto-loaded by Claude)
+│   ├── TEMPLATE_IMPROVEMENTS.md   Template backport audit — findings to adopt back into the base template
+│   ├── WOI-PROJECT-PROMPT.md      Original project brief
+│   └── WORKFLOW.md                Workflow notes
+│
 ├── .github/
 │   └── workflows/
 │       ├── setup.yml              Auto-patches repo name on first push (self-deletes after)
@@ -46,6 +51,7 @@
 │   ├── skills/                    Claude skill definitions
 │   └── rules/
 │       ├── ARCHITECTURE.md        System design and data flow
+│       ├── ANIMATIONS.md          Catalog of reusable, content-independent animation components
 │       ├── CONVENTIONS.md         Code standards and patterns
 │       ├── FILE_STRUCTURE.md      This file
 │       ├── ROLLUP.md              Build configuration
@@ -83,3 +89,4 @@
 | Architecture docs      | `.claude/rules/`                                              |
 | Reference markup       | `structure/<name>.html` (clean Webflow DOM per component)     |
 | Standalone test harness| `playground/<name>.html` (GSAP via CDN, open in browser)      |
+| Standalone text doc    | `docs/<name>.md` (project brief, workflow notes, template audit — not auto-loaded by Claude, unlike `.claude/rules/`) |
