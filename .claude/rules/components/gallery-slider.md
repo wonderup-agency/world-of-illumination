@@ -25,6 +25,13 @@ Required structure inside:
     - `.swiper-slide` — one per item
 - `.slider-prev` / `.slider-next` — prev/next arrow buttons
 
+Optional attribute, on the wrapper:
+
+- `data-gallery-slider-loop` — boolean (presence only, no value needed). Makes
+  the slider infinite: scrolling/arrow-clicking past the last slide wraps back
+  to the first, and vice versa. Omit for the default stop-at-the-ends
+  behavior.
+
 Example (image gallery, matching the `gallery_*` Client-First classes used on
 the first section this shipped on):
 
@@ -80,6 +87,23 @@ your visual styling (background, radius, etc.) on a child instead.
   be used — both when there aren't enough slides to ever scroll
   (`watchOverflow: true` marks both arrows disabled) and when you're at the
   first/last slide of a longer list (only that one arrow gets dimmed).
+- **Loop mode** (`data-gallery-slider-loop`): when present (and 2+ real
+  slides exist), the real `.swiper-slide` set is padded with extra rounds of
+  itself (cloned, `aria-hidden="true"`) up to `MIN_SLIDES_FOR_LOOP` (16)
+  before Swiper ever initializes — same technique as
+  [`theme-carousel`](./theme-carousel.md). This is required, not optional
+  polish: Swiper's `loop` needs enough real slides to duplicate around the
+  loop boundary, and with `centeredSlides` peeking up to 3.4 slides at once
+  on desktop, a short CMS/Webflow list (a handful of images) isn't always
+  enough on its own — without the padding, Swiper silently disables the loop
+  ("not enough slides for loop mode..."), which would render as arrows that
+  stop at the ends despite the attribute being set. `loop: true` is then
+  passed instead of `watchOverflow` (mutually exclusive per instance — loop
+  never "runs out" of slides to disable arrows for), with
+  `loopAdditionalSlides: 2` (Swiper's own recommended small buffer for a
+  `centeredSlides` loop) and `initialSlide: 0` (loop's own duplicated slides
+  already surround slide 0 on both sides, so there's no empty-edge problem to
+  work around the way there is without loop).
 - **Resize**: Not used — Swiper's own default resize handling re-measures
   and recalculates slide widths internally.
 - **Breakpoint**: Not used — responsiveness is handled by Swiper's own
@@ -120,6 +144,20 @@ Elements matching `[data-component='gallery-slider']` must contain:
 - No CMS-specific logic (no "new show" reordering like `locations`, no
   forced eager-loading of images) — if a future section needs either of
   those, use `locations` or fork a new variant instead of adding it here.
+- **Loop is opt-in per instance**, not global — a section that should stop at
+  the ends (the original behavior) just omits `data-gallery-slider-loop`;
+  only sections that ask for "infinite" scrolling need the attribute added
+  in Webflow. Needs 2+ real slides — with only 0-1, the attribute is ignored
+  and the instance falls back to normal stop-at-the-ends behavior instead of
+  asking Swiper to loop nothing/a single slide.
+- **Touch/swipe on mobile is unaffected** — `allowTouchMove`/`simulateTouch`
+  are left at Swiper's defaults (unlike `theme-carousel`, which disables them
+  for its fully-automatic carousel), so drag-to-scroll and the loop wrap both
+  work the same on touch as with the arrows, at every breakpoint.
+- **Raise `MIN_SLIDES_FOR_LOOP`** (currently `16`, in `gallery-slider.js`) if
+  a future instance ever shows gaps while looping on a very wide/ultra-wide
+  monitor — more cards peek at once there, raising the bar Swiper's internal
+  loop math needs cleared, same tuning note as `theme-carousel.md`.
 - **Why the dimmed-arrow CSS needs `!important`**: see the same note in
   [`slider-swiper.md`](./slider-swiper.md#notes) — `testimonials.js` imports
   `swiper/css/navigation`, whose bare `.swiper-button-lock` rule ships
