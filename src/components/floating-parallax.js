@@ -96,8 +96,7 @@ export default function (elements) {
           // applies `x` to directly (train mode has no separate wrapper), and
           // GSAP's own containerAnimation guidance is to trigger off a child
           // of whatever the driving animation moves, not that element itself.
-          const stage =
-            panel.querySelector('.floating-image-wrapper') || panel
+          const stage = panel.querySelector('.floating-image-wrapper') || panel
 
           const trigger = ScrollTrigger.create({
             containerAnimation: hostTrigger.animation,
