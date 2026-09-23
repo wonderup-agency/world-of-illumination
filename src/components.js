@@ -14,6 +14,10 @@
 
 export default [
   {
+    selector: "[data-component='faq-search']",
+    importFn: () => import('./components/faq-search.js'),
+  },
+  {
     selector: "[data-component='floating-parallax']",
     importFn: () => import('./components/floating-parallax.js'),
   },

@@ -1,0 +1,123 @@
+/*
+Visual styling for the faq-search component. Show/hide of
+[data-faq-search='dropdown'|'empty'|'data-source'] is set directly in
+Webflow (bare structural classes) — this file only adds the real look,
+per this project's convention of keeping visual CSS in the bundle.
+*/
+
+.faq-search_component {
+  position: relative;
+  width: 100%;
+  max-width: 30rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.faq-search_input-wrapper {
+  position: relative;
+}
+
+.faq-search_input {
+  width: 100%;
+  height: 3rem;
+  padding: 0 3.25rem 0 1.25rem;
+  border: 1px solid rgba(240, 239, 234, 0.7); /* Alpha/White 70, per Figma */
+  border-radius: 6.25rem; /* 100px per Figma — same full-pill result as any value ≥ half the height */
+  background-color: rgba(240, 239, 234, 0.1); /* Alpha/White 10, per Figma */
+  backdrop-filter: blur(1.25rem); /* 20px background blur per Figma */
+  -webkit-backdrop-filter: blur(1.25rem);
+  color: #fff;
+  font-size: 1.125rem; /* ≥16px so iOS Safari never auto-zooms in on focus */
+  font-weight: 600;
+  line-height: 1.3;
+  -webkit-appearance: none; /* strip iOS's own inset-shadow input chrome */
+  appearance: none;
+}
+
+.faq-search_input::placeholder {
+  color: rgba(240, 239, 234, 0.7);
+}
+
+.faq-search_input:focus-visible {
+  outline: 2px solid #2d62ff;
+  outline-offset: 2px;
+}
+
+/*
+!important below: Webflow reinterprets the raw <button> this component
+builds as its own native Link/Button element and stamps it with its own
+".w-button" class (blue fill, padding, block display) alongside ours —
+same class of bundled-CSS collision documented in slider-swiper.md. Our
+rule needs to reliably win, not just tie, against that Webflow default.
+*/
+.faq-search_icon-button {
+  /* top/right are deliberately NOT set here — positioned by hand in the
+     Designer instead (top: 50% + a -50% Y transform to center it against
+     the pill's height), which is more reliable than a guessed fixed
+     inset here fighting a value set on the same class in Designer. */
+  position: absolute !important;
+  width: 2.5rem !important;
+  height: 2.5rem !important;
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 50% !important;
+  background-color: #4cba9f !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.faq-search_icon-button:focus-visible {
+  outline: 2px solid #2d62ff;
+  outline-offset: 2px;
+}
+
+.faq-search_dropdown {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  max-height: min(22rem, 60vh); /* never overflow a short mobile viewport */
+  overflow-y: auto;
+  overscroll-behavior: contain; /* scrolling the dropdown list can't also scroll the page behind it */
+  background-color: #1a1f39;
+  border: 1px solid rgba(240, 239, 234, 0.1);
+  border-radius: 0.75rem;
+  padding: 0.5rem;
+  box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.35);
+}
+
+.faq-search_results {
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.faq-search_result {
+  display: block;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  color: #fff;
+  font-size: 1rem;
+  line-height: 1.4;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.faq-search_result:hover,
+.faq-search_result.is-active {
+  background-color: rgba(76, 186, 159, 0.15);
+  color: #4cba9f;
+}
+
+.faq-search_empty-text {
+  display: block;
+  padding: 0.75rem 1rem;
+  color: rgba(240, 239, 234, 0.7);
+  font-size: 1rem;
+}
