@@ -27,7 +27,8 @@ export default function (elements) {
       dataSource.querySelectorAll('[data-faq-search-field="question"]')
     )
       .map((questionEl) => {
-        const item = questionEl.closest('.w-dyn-item') || questionEl.parentElement
+        const item =
+          questionEl.closest('.w-dyn-item') || questionEl.parentElement
         const slugEl = item?.querySelector('[data-faq-search-field="slug"]')
         const question = questionEl.textContent.trim()
         const slug = slugEl?.textContent.trim()

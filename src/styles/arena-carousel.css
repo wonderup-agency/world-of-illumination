@@ -1,0 +1,25 @@
+/* Only applies once JS has built the Swiper structure (.is-arena-carousel),
+   so if the script fails the Designer layout of .arena_item-wrapper stays as-is.
+   Overrides the wrapper's own grid/flex layout, which would otherwise fight
+   Swiper's single .swiper-wrapper track. */
+[data-component='arena-carousel'].is-arena-carousel {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  gap: 0;
+}
+
+[data-component='arena-carousel'] .swiper-wrapper {
+  display: flex;
+}
+
+/* Swiper sets each slide's width inline; this just keeps them from shrinking */
+[data-component='arena-carousel'] .swiper-slide {
+  flex-shrink: 0;
+  height: auto;
+}
+
+[data-component='arena-carousel'] .swiper-slide img {
+  display: block;
+  width: 100%;
+}

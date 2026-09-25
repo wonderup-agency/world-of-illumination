@@ -14,6 +14,10 @@
 
 export default [
   {
+    selector: "[data-component='arena-carousel']",
+    importFn: () => import('./components/arena-carousel.js'),
+  },
+  {
     selector: "[data-component='faq-search']",
     importFn: () => import('./components/faq-search.js'),
   },

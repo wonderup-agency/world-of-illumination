@@ -37,6 +37,7 @@ requirement called out.
 | [`slider-swiper`](./components/slider-swiper.md) | `slider-swiper` | Plain carousel — several full slides at once, no peeking, prev/next arrows. | Yes — any `.swiper`/`.swiper-wrapper`/`.swiper-slide` structure; multiple instances can point at different CMS sources on the same page. |
 | [`gallery-slider`](./components/gallery-slider.md) | `gallery-slider` | "Peek" carousel — centered slide with neighbors partially visible at the edges. Optional infinite loop via `data-gallery-slider-loop`. | Yes — same Swiper structure as above. |
 | [`theme-carousel`](./components/theme-carousel.md) | `theme-carousel` | Fully automatic peek carousel — no arrows, no drag, advances on its own timer. | Yes — same Swiper structure; pads short CMS lists automatically for a clean loop. |
+| [`arena-carousel`](./components/arena-carousel.md) | `arena-carousel` | Automatic infinite-loop carousel, several equal slides at once (1.3 → 4 per breakpoint), no arrows/drag. Builds the Swiper markup itself. | Yes — any wrapper; every direct child becomes a slide (static Designer items, no Swiper classes needed). |
 | [`testimonials`](./components/testimonials.md) | `testimonials` | One slide at a time, looping, with clickable pagination dots. | Yes — same Swiper structure. |
 
 ## Notes

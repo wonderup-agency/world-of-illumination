@@ -7,6 +7,7 @@
 │   ├── config.js                  Shared project config (API keys, endpoints, flags)
 │   ├── components/
 │   │   ├── global.js              Runs on every page before components load
+│   │   ├── arena-carousel.js      Autoplay loop Swiper for static Designer items (styles in src/styles/arena-carousel.css)
 │   │   ├── elastic-pulse-button.js Bouncy squash-&-stretch hover effect on buttons (GSAP)
 │   │   ├── horizontal-scroll.js   Osmo-style horizontal scroll + curtain pin effect
 │   │   ├── horizontal-scroll.css  Structural CSS for the horizontal-scroll component
