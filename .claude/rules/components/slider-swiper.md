@@ -49,9 +49,28 @@ Only `.swiper`, `.swiper-wrapper`, `.swiper-slide`, `.slider-prev`,
 `.slider-next` are read by the JS — any other class names/content inside a
 slide (or around the swiper) are free to differ per section/CMS.
 
+**Static Designer items (no Swiper classes, no CMS)** — e.g. `section_swiper`
+on Studios (`swiper_list-wrapper` > `swiper_list` > `swiper_item`): instead of
+adding Swiper classes by hand, put `data-slider-swiper-list` (no value) on the
+element whose **direct children** are the slides (`swiper_list`). JS then adds
+`.swiper` to its parent, `.swiper-wrapper` to it and `.swiper-slide` to every
+child before init. Any number of items works. Skipped automatically if the
+markup already has a `.swiper` (CMS case).
+
+Optional attribute on the wrapper:
+
+- `data-slider-swiper-per-view="1"` — max slides visible at once, caps the
+  default `1 / 2 / 3` per breakpoint (e.g. `1` = one full slide at every
+  breakpoint, `2` = `1 / 2 / 2`). Omit for the default. `section_swiper` uses
+  `1` since each `block_card` is a wide two-column card.
+
 ## Behavior
 
-- **Init**: Initialises a Swiper instance on `.swiper` inside the component
+- **Init**: If `[data-slider-swiper-list]` exists and there's no `.swiper`,
+  builds the Swiper classes first (see Webflow Setup). Forces every slide
+  `<img>` to `loading="eager"` (offscreen lazy images would otherwise load —
+  and resize the card — only once navigated to). Then initialises a Swiper
+  instance on `.swiper` inside the component
   with an integer `slidesPerView` per breakpoint (see Notes) — unlike
   [`gallery-slider`](./gallery-slider.md), there's no `centeredSlides` and no
   fractional `slidesPerView`, so slides fill the row edge-to-edge with no
@@ -90,10 +109,16 @@ Elements matching `[data-component='slider-swiper']` must contain:
 
 ## Notes
 
-- **Slide counts per breakpoint** (`slidesPerView`, set in `slider-swiper.js`):
-  `1` by default (mobile), `2` at 768px, `3` at 992px+. Adjust these numbers
-  directly in the `breakpoints` object if a section needs to show more/fewer
-  slides at once.
+- **Slide counts per breakpoint** (`PER_VIEW` in `slider-swiper.js`):
+  `1` by default (mobile), `2` at 768px, `3` at 992px+, each capped by
+  `data-slider-swiper-per-view` per instance. Prefer the attribute over
+  editing `PER_VIEW` (that changes every instance, e.g. Press).
+- **Why `section_swiper` extends this instead of `gallery-slider` or a new
+  component**: it originally carried `data-component="gallery-slider"`, which
+  silently did nothing (no `.swiper` in the markup) and is a centered "peek"
+  carousel anyway. This component is already the project's plain arrows-only
+  slider; the two additions are opt-in, so Press (CMS) behaves exactly as
+  before. `locations` stays separate (centered, CMS-specific reordering).
 - `spaceBetween` (gutter between slides) is set per breakpoint alongside
   `slidesPerView` in the same `breakpoints` object.
 - No CMS-specific logic — each instance's slides come straight from whichever
