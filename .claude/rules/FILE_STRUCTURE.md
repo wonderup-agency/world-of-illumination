@@ -9,6 +9,7 @@
 │   │   ├── global.js              Runs on every page before components load
 │   │   ├── arena-carousel.js      Autoplay loop Swiper for static Designer items (styles in src/styles/arena-carousel.css)
 │   │   ├── elastic-pulse-button.js Bouncy squash-&-stretch hover effect on buttons (GSAP)
+│   │   ├── headings-stagger.js    One-by-one fade/rise entrance for a wrapper's direct children
 │   │   ├── horizontal-scroll.js   Osmo-style horizontal scroll + curtain pin effect
 │   │   ├── horizontal-scroll.css  Structural CSS for the horizontal-scroll component
 │   │   ├── horizontal-scroll-mobile.js  Tablet/mobile crossfade fallback for horizontal-scroll

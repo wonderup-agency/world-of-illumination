@@ -14,6 +14,10 @@
 
 export default [
   {
+    selector: "[data-component='headings-stagger']",
+    importFn: () => import('./components/headings-stagger.js'),
+  },
+  {
     selector: "[data-component='arena-carousel']",
     importFn: () => import('./components/arena-carousel.js'),
   },
