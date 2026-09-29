@@ -63,6 +63,26 @@ Optional attribute on the wrapper:
   default `1 / 2 / 3` per breakpoint (e.g. `1` = one full slide at every
   breakpoint, `2` = `1 / 2 / 2`). Omit for the default. `section_swiper` uses
   `1` since each `block_card` is a wide two-column card.
+- `data-slider-swiper-equal-height` — boolean (presence only). Every slide's
+  direct child (the card) stretches to the tallest slide's height, so a
+  short card fills the row instead of leaving an empty gap above the arrows.
+  CSS only (slide becomes `display: flex`, child `flex: 1`) — flex rather
+  than `height: 100%` since % heights of stretched flex items are unreliable
+  in iOS Safari. `section_swiper` uses it.
+- `data-slider-swiper-compact` — boolean (presence only). Below 768px,
+  hides the slide body copy (`[data-text-size='m']` → `display: none`) and
+  shrinks the title (`[data-text-size='h1']` → `--_typography---h3--size-h3`,
+  1.375rem mobile vs 2.25rem). The long descriptions were what made card
+  heights so uneven on mobile; shrinking them to 1rem (tried first) wasn't
+  enough, so they're hidden there by request (2026-09-28). Tablet/desktop
+  keep the full text. Scoped to this slider only — the shared
+  "Element / Block Card" Webflow component (9 instances sitewide) is
+  untouched. `section_swiper` uses it. Add more `data-text-size` values to
+  the rule in `slider-swiper.css` if a future slider uses other sizes.
+- **Tried and dropped: Swiper `autoHeight`** (container follows the active
+  slide's height). It removed the gap but made the arrows and everything
+  below jump on each slide change — equal height + compact text was
+  preferred instead (2026-09-28).
 
 ## Behavior
 

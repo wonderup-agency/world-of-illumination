@@ -9,6 +9,37 @@
   opacity: 0;
 }
 
+/* Opt-in: every slide's card stretches to the tallest slide, so uneven
+   content doesn't leave a gap under a short card. Flex (not height: 100%) so
+   it also holds in iOS Safari, where % heights of stretched items can fail. */
+[data-slider-swiper-equal-height] .swiper-wrapper {
+  align-items: stretch;
+}
+
+[data-slider-swiper-equal-height] .swiper-slide {
+  display: flex;
+  height: auto;
+}
+
+[data-slider-swiper-equal-height] .swiper-slide > * {
+  flex: 1 1 auto;
+  height: auto;
+}
+
+/* Opt-in: compact slides on mobile — long body copy wraps into many more
+   lines there and makes card heights wildly uneven, so it's hidden and the
+   title uses a smaller site token. Beats Webflow's plain [data-text-size]
+   rules by specificity. */
+@media (max-width: 767px) {
+  [data-slider-swiper-compact] .swiper-slide [data-text-size='h1'] {
+    font-size: var(--_typography---h3--size-h3);
+  }
+
+  [data-slider-swiper-compact] .swiper-slide [data-text-size='m'] {
+    display: none;
+  }
+}
+
 /* Dim (never hide) whichever arrow can't be used right now — this also
    covers "not enough slides to ever scroll" (watchOverflow), since Swiper
    marks both arrows disabled AND locked in that case too. Lights back up on
