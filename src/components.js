@@ -14,6 +14,14 @@
 
 export default [
   {
+    selector: "[data-component='content-tabs']",
+    importFn: () => import('./components/content-tabs.js'),
+  },
+  {
+    selector: "[data-component='before-after']",
+    importFn: () => import('./components/before-after.js'),
+  },
+  {
     selector: "[data-component='headings-stagger']",
     importFn: () => import('./components/headings-stagger.js'),
   },

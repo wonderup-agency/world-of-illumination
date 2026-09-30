@@ -8,6 +8,8 @@
 │   ├── components/
 │   │   ├── global.js              Runs on every page before components load
 │   │   ├── arena-carousel.js      Autoplay loop Swiper for static Designer items (styles in src/styles/arena-carousel.css)
+│   │   ├── before-after.js        Draggable two-image comparator, e.g. day/night (styles in src/styles/before-after.css)
+│   │   ├── content-tabs.js        Attribute-driven tabs, links paired to panes by order (styles in src/styles/content-tabs.css)
 │   │   ├── elastic-pulse-button.js Bouncy squash-&-stretch hover effect on buttons (GSAP)
 │   │   ├── headings-stagger.js    One-by-one fade/rise entrance for a wrapper's direct children
 │   │   ├── horizontal-scroll.js   Osmo-style horizontal scroll + curtain pin effect

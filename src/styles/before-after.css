@@ -1,0 +1,25 @@
+/* Structural rules only — visual styling lives on the Webflow classes. */
+
+[data-component='before-after'] {
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: ew-resize;
+}
+
+[data-component='before-after'] img {
+  pointer-events: none;
+}
+
+[data-component='before-after'] [data-before-after='before'] {
+  clip-path: inset(0 calc(100% - var(--before-after-position, 50%)) 0 0);
+}
+
+[data-component='before-after'] [data-before-after='handle'] {
+  left: var(--before-after-position, 50%);
+}
+
+[data-component='before-after'] [data-before-after='handle']:focus-visible {
+  outline: 2px solid var(--system--focus-state, #2d62ff);
+  outline-offset: 2px;
+}

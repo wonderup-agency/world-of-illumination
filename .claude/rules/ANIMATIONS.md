@@ -31,6 +31,13 @@ requirement called out.
 | [`marquee`](./components/marquee.md) | `marquee` | Infinite horizontal ticker — auto-duplicates content to fill the width and loop seamlessly, any speed/direction. | Yes — any `.marquee_item`s inside `.marquee_track` (fixed class names, but content itself is free). |
 | [`tapes`](./components/tapes.md) | `tapes` | Two diagonal ticker rows crossing in an X, each auto-repeating a single heading to fill its width. | Yes — any single heading per `.tape-element` row. |
 
+## Reusable interactive blocks
+
+| Component | `data-component` | Effect | Works on any content? |
+| --- | --- | --- | --- |
+| [`before-after`](./components/before-after.md) | `before-after` | Two stacked images with a draggable vertical divider (mouse, touch, keyboard) — e.g. day vs. night. | Yes — use the Webflow Component "Element / Before After" and set its 2 image props. |
+| [`content-tabs`](./components/content-tabs.md) | `content-tabs` | Tabs by attribute: each `link` shows its `pane` (paired by order); horizontal-scrolling menu on small screens. | Yes — any `link`/`pane` pairs; default = the one with `is-active`. |
+
 ## Reusable sliders (Swiper-based, not pure animation but drop-in reusable)
 
 | Component | `data-component` | Effect | Works on any content? |
