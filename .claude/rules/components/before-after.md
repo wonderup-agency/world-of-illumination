@@ -35,7 +35,10 @@ Inside it:
   (`role="slider"`, Arrow keys ±5%, Home/End).
 - **Mouse / pen** (pointer events): click anywhere in the frame jumps the
   divider there; drag to move.
-- **Touch** (plain touch events): the first 6px of movement (`TOUCH_LOCK`)
+- **Touch on the handle** (button or line): owned by the slider from the
+  first contact (`preventDefault` on `touchstart`), so Safari can never
+  claim it for page scroll. Guaranteed drag path on iPhone.
+- **Touch elsewhere** (plain touch events): the first 3px of movement (`TOUCH_LOCK`)
   decide the gesture — sideways → the slider owns it (`preventDefault`,
   divider follows the finger); up/down → the page scrolls normally. A tap
   with no movement jumps the divider to the tapped point. It never jumps on
@@ -67,6 +70,16 @@ Inside it:
   scroll; vertical swipe scrolled the page 271px with the divider untouched;
   tap jumped to the tapped point; mouse click/drag unchanged. Not yet
   verified on a physical iPhone.
+- **Second iPhone fix (2026-10-05)**: the touch-events version still failed
+  on a real iPhone. Cause: iOS commits a touch to native scrolling on the
+  first touchmove that isn't prevented, so waiting 6px to decide the axis
+  was too late — every later touchmove is non-cancelable. Fix: grabbing the
+  handle prevents on `touchstart`; elsewhere the lock dropped to 3px and the
+  code skips non-cancelable moves instead of fighting Safari. Tested with
+  Playwright WebKit (iPhone 13 profile): component inits on the live page,
+  tap jumps the divider, tap on handle doesn't. WebKit on Windows can't
+  synthesize a touch drag, so the drag itself was verified in Chromium only
+  (handle drag, image drag, vertical scroll, tap all pass).
 - Works inside hidden tab panes (`content-tabs`): no measuring at init, the
   pointer math reads the frame's size on each move.
 - Aspect ratio of the frame: 17/10 desktop, 4/3 tablet, 1/1 mobile

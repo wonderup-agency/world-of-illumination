@@ -8,7 +8,7 @@ import '../styles/before-after.css'
 const START = 50
 const KEY_STEP = 5
 // px a finger must travel before we decide "sideways = slider" vs "up/down = page scroll"
-const TOUCH_LOCK = 6
+const TOUCH_LOCK = 3
 
 /**
  * @param {HTMLElement[]} elements - All elements matching [data-component='before-after']
@@ -56,13 +56,19 @@ export default function (elements) {
     element.addEventListener('pointerup', stop)
     element.addEventListener('pointercancel', stop)
 
-    // Touch: plain touch events, not pointer events + touch-action. iOS
-    // Safari doesn't reliably honor `touch-action: pan-y`, so it claimed
-    // horizontal swipes for itself and the divider never moved on iPhone
-    // (Chrome/Android was fine). Here the gesture direction is decided on the
-    // first few px: sideways → we own it (preventDefault, move the divider);
-    // up/down → we let the page scroll. A tap with no movement jumps the
-    // divider to the tapped point, same as a mouse click.
+    // Touch: plain touch events, not pointer events + touch-action.
+    //
+    // iOS Safari commits a touch to native scrolling on the very first
+    // touchmove that isn't preventDefault'ed — after that every touchmove is
+    // non-cancelable and the divider can't win the gesture back. So:
+    // 1. Touch starting on the handle (button or line) → ours from the first
+    //    contact: preventDefault on touchstart, before Safari decides anything.
+    //    This is the path that's guaranteed on iPhone.
+    // 2. Touch anywhere else on the image → direction decided after
+    //    TOUCH_LOCK px: sideways → divider follows; up/down → page scrolls.
+    //    If Safari already claimed the gesture (cancelable === false) we
+    //    leave it alone instead of fighting it.
+    // A tap with no movement jumps the divider to the tapped point.
     let touchStart = null
     let touchAxis = null
 
@@ -73,8 +79,12 @@ export default function (elements) {
         const touch = event.touches[0]
         touchStart = { x: touch.clientX, y: touch.clientY }
         touchAxis = null
+        if (handle?.contains(event.target)) {
+          touchAxis = 'x'
+          event.preventDefault()
+        }
       },
-      { passive: true }
+      { passive: false }
     )
 
     element.addEventListener(
@@ -89,7 +99,7 @@ export default function (elements) {
           if (Math.abs(dx) < TOUCH_LOCK && Math.abs(dy) < TOUCH_LOCK) return
           touchAxis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y'
         }
-        if (touchAxis !== 'x') return
+        if (touchAxis !== 'x' || !event.cancelable) return
 
         event.preventDefault()
         positionFromX(touch.clientX)
