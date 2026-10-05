@@ -7,6 +7,8 @@ import '../styles/before-after.css'
 
 const START = 50
 const KEY_STEP = 5
+// px a finger must travel before we decide "sideways = slider" vs "up/down = page scroll"
+const TOUCH_LOCK = 6
 
 /**
  * @param {HTMLElement[]} elements - All elements matching [data-component='before-after']
@@ -29,24 +31,23 @@ export default function (elements) {
       handle?.setAttribute('aria-valuenow', Math.round(position))
     }
 
-    const positionFromEvent = (event) => {
+    const positionFromX = (clientX) => {
       const rect = element.getBoundingClientRect()
-      setPosition(((event.clientX - rect.left) / rect.width) * 100)
+      setPosition(((clientX - rect.left) / rect.width) * 100)
     }
 
-    // Mouse jumps to the click point right away. Touch only follows a
-    // horizontal move: jumping on touchstart would also fire when the user
-    // is just starting a vertical page scroll (touch-action: pan-y hands
-    // vertical swipes to the browser, which then sends pointercancel).
+    // Mouse / pen: pointer events. Click jumps to the point, drag follows.
     element.addEventListener('pointerdown', (event) => {
+      if (event.pointerType === 'touch') return
       if (event.pointerType === 'mouse' && event.button !== 0) return
       dragging = true
       element.setPointerCapture(event.pointerId)
-      if (event.pointerType === 'mouse') positionFromEvent(event)
+      positionFromX(event.clientX)
     })
 
     element.addEventListener('pointermove', (event) => {
-      if (dragging) positionFromEvent(event)
+      if (dragging && event.pointerType !== 'touch')
+        positionFromX(event.clientX)
     })
 
     const stop = () => {
@@ -54,6 +55,58 @@ export default function (elements) {
     }
     element.addEventListener('pointerup', stop)
     element.addEventListener('pointercancel', stop)
+
+    // Touch: plain touch events, not pointer events + touch-action. iOS
+    // Safari doesn't reliably honor `touch-action: pan-y`, so it claimed
+    // horizontal swipes for itself and the divider never moved on iPhone
+    // (Chrome/Android was fine). Here the gesture direction is decided on the
+    // first few px: sideways → we own it (preventDefault, move the divider);
+    // up/down → we let the page scroll. A tap with no movement jumps the
+    // divider to the tapped point, same as a mouse click.
+    let touchStart = null
+    let touchAxis = null
+
+    element.addEventListener(
+      'touchstart',
+      (event) => {
+        if (event.touches.length !== 1) return
+        const touch = event.touches[0]
+        touchStart = { x: touch.clientX, y: touch.clientY }
+        touchAxis = null
+      },
+      { passive: true }
+    )
+
+    element.addEventListener(
+      'touchmove',
+      (event) => {
+        if (!touchStart || event.touches.length !== 1) return
+        const touch = event.touches[0]
+        const dx = touch.clientX - touchStart.x
+        const dy = touch.clientY - touchStart.y
+
+        if (!touchAxis) {
+          if (Math.abs(dx) < TOUCH_LOCK && Math.abs(dy) < TOUCH_LOCK) return
+          touchAxis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y'
+        }
+        if (touchAxis !== 'x') return
+
+        event.preventDefault()
+        positionFromX(touch.clientX)
+      },
+      { passive: false }
+    )
+
+    element.addEventListener('touchend', () => {
+      if (touchStart && !touchAxis) positionFromX(touchStart.x)
+      touchStart = null
+      touchAxis = null
+    })
+
+    element.addEventListener('touchcancel', () => {
+      touchStart = null
+      touchAxis = null
+    })
 
     if (handle) {
       handle.setAttribute('role', 'slider')

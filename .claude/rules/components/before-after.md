@@ -33,9 +33,12 @@ Inside it:
   on the frame; `before-after.css` turns it into the `before` layer's
   `clip-path` and the handle's `left`. Makes the handle a keyboard slider
   (`role="slider"`, Arrow keys ±5%, Home/End).
-- **Mouse**: click anywhere in the frame jumps the divider there; drag to move.
-- **Touch**: only horizontal drags move the divider (`touch-action: pan-y`),
-  so vertical swipes still scroll the page. It deliberately does not jump on
+- **Mouse / pen** (pointer events): click anywhere in the frame jumps the
+  divider there; drag to move.
+- **Touch** (plain touch events): the first 6px of movement (`TOUCH_LOCK`)
+  decide the gesture — sideways → the slider owns it (`preventDefault`,
+  divider follows the finger); up/down → the page scrolls normally. A tap
+  with no movement jumps the divider to the tapped point. It never jumps on
   touchstart, which would fire at the start of every page scroll.
 - **Resize / Breakpoint**: Not used — the position is a percentage.
 
@@ -52,6 +55,18 @@ Inside it:
 
 ## Notes
 
+- **Why touch uses touch events, not pointer events + `touch-action`**
+  (fixed 2026-10-05): the first version relied on `touch-action: pan-y` so
+  the browser would hand horizontal swipes to the pointer handlers. That
+  worked in Chrome/Android (confirmed with a headless touch test, 50% → 7%)
+  but the divider didn't move on the user's phone — iOS Safari doesn't
+  reliably honor `pan-y` and keeps the gesture. Direction-locking on
+  `touchmove` with `preventDefault` (same approach as Swiper) works on every
+  mobile browser. `touch-action: pan-y` stays in the CSS as a hint only.
+  Verified with a headless touch test: sideways drag 50% → 10% with no page
+  scroll; vertical swipe scrolled the page 271px with the divider untouched;
+  tap jumped to the tapped point; mouse click/drag unchanged. Not yet
+  verified on a physical iPhone.
 - Works inside hidden tab panes (`content-tabs`): no measuring at init, the
   pointer math reads the frame's size on each move.
 - Aspect ratio of the frame: 17/10 desktop, 4/3 tablet, 1/1 mobile
