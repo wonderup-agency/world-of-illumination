@@ -79,7 +79,8 @@ Inside it:
   Playwright WebKit (iPhone 13 profile): component inits on the live page,
   tap jumps the divider, tap on handle doesn't. WebKit on Windows can't
   synthesize a touch drag, so the drag itself was verified in Chromium only
-  (handle drag, image drag, vertical scroll, tap all pass).
+  (handle drag, image drag, vertical scroll, tap all pass). **Confirmed
+  working on a physical iPhone by the user (build `f52439c`).**
 - Works inside hidden tab panes (`content-tabs`): no measuring at init, the
   pointer math reads the frame's size on each move.
 - Aspect ratio of the frame: 17/10 desktop, 4/3 tablet, 1/1 mobile
