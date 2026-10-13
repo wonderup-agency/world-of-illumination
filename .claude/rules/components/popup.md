@@ -80,6 +80,11 @@ Optional attributes on the wrapper:
 
 ## Behavior
 
+- **Announcement priority**: before anything else, if the page contains an
+  active [`announcement-popup`](./announcement-popup.md)
+  (`[data-component='announcement-popup'] .w-dyn-item`), this popup does
+  nothing — announcements (cancellations/notices) always win over presale.
+
 - **Init**: If `data-popup-start-date`/`data-popup-end-date` are set and
   "now" falls outside that window, the component does nothing at all for
   that instance — no overlay/close-button setup, no listeners, no popup —

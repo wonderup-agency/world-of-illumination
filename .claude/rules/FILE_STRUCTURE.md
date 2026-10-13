@@ -7,6 +7,7 @@
 │   ├── config.js                  Shared project config (API keys, endpoints, flags)
 │   ├── components/
 │   │   ├── global.js              Runs on every page before components load
+│   │   ├── announcement-popup.js  Homepage popup for CMS "Show MESSAGE" announcements; wins over presale popup (styles in src/styles/announcement-popup.css)
 │   │   ├── arena-carousel.js      Autoplay loop Swiper for static Designer items (styles in src/styles/arena-carousel.css)
 │   │   ├── before-after.js        Draggable two-image comparator, e.g. day/night (styles in src/styles/before-after.css)
 │   │   ├── content-tabs.js        Attribute-driven tabs, links paired to panes by order (styles in src/styles/content-tabs.css)

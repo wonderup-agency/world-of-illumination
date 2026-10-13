@@ -1,0 +1,46 @@
+/* Same geometry as popup.css, scoped to the announcement popup. The shared
+   [data-popup='overlay'] / [data-popup='close'] rules come from popup.css. */
+[data-component='announcement-popup'] {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.3s ease,
+    visibility 0.3s ease;
+}
+
+[data-component='announcement-popup'].is-active {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+[data-component='announcement-popup'] > *:not([data-popup='overlay']) {
+  position: relative;
+  z-index: 1;
+  max-width: 40rem;
+  width: 100%;
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+  transform: scale(0.95);
+  transition: transform 0.3s ease;
+}
+
+[data-component='announcement-popup'].is-active
+  > *:not([data-popup='overlay']) {
+  transform: scale(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-component='announcement-popup'],
+  [data-component='announcement-popup'] > *:not([data-popup='overlay']) {
+    transition: none;
+  }
+}

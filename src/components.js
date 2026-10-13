@@ -14,6 +14,10 @@
 
 export default [
   {
+    selector: "[data-component='announcement-popup']",
+    importFn: () => import('./components/announcement-popup.js'),
+  },
+  {
     selector: "[data-component='content-tabs']",
     importFn: () => import('./components/content-tabs.js'),
   },

@@ -14,6 +14,17 @@ const DEFAULT_DELAY = 600
  */
 export default function (elements) {
   elements.forEach((popup) => {
+    // An active announcement (see announcement-popup.js) always takes
+    // priority — the presale popup stays hidden while one is showing.
+    if (
+      document.querySelector(
+        "[data-component='announcement-popup'] .w-dyn-item"
+      )
+    ) {
+      console.log('[popup] Announcement active — presale popup not showing.')
+      return
+    }
+
     const startDate = popup.getAttribute('data-popup-start-date')
     const endDate = popup.getAttribute('data-popup-end-date')
 
