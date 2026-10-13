@@ -61,3 +61,9 @@ data-component="announcement-popup"
   on/off in the CMS and publishes — no code change.
 - Empty-list detection relies on Webflow's `.w-dyn-item` class; the list's
   own "no items" state is irrelevant (never shown, popup doesn't open).
+- **Designer-only Code Embed is published too**: the wrapper's `.w-embed`
+  child (`html.wf-design-mode .pop-up-wrapper { display: none }`) is rendered
+  on the live site. As a flex item next to the card it took half the row and
+  pushed the card off-center to the left (fixed 2026-10-13).
+  `announcement-popup.css` hides `> .w-embed` and excludes it from the card
+  rules, so it can stay in the Webflow markup.

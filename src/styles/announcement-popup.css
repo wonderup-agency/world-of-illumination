@@ -22,7 +22,14 @@
   pointer-events: auto;
 }
 
-[data-component='announcement-popup'] > *:not([data-popup='overlay']) {
+/* The Designer-only Code Embed (a .w-embed direct child) is published too.
+   As a flex item it took half the row and pushed the card off-center. */
+[data-component='announcement-popup'] > .w-embed {
+  display: none;
+}
+
+[data-component='announcement-popup']
+  > *:not([data-popup='overlay']):not(.w-embed) {
   position: relative;
   z-index: 1;
   max-width: 40rem;
@@ -34,13 +41,14 @@
 }
 
 [data-component='announcement-popup'].is-active
-  > *:not([data-popup='overlay']) {
+  > *:not([data-popup='overlay']):not(.w-embed) {
   transform: scale(1);
 }
 
 @media (prefers-reduced-motion: reduce) {
   [data-component='announcement-popup'],
-  [data-component='announcement-popup'] > *:not([data-popup='overlay']) {
+  [data-component='announcement-popup']
+    > *:not([data-popup='overlay']):not(.w-embed) {
     transition: none;
   }
 }
