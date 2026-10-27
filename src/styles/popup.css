@@ -46,7 +46,8 @@
   transition: transform 0.3s ease;
 }
 
-[data-component='popup'].is-active > *:not([data-popup='overlay']):not(.w-embed) {
+[data-component='popup'].is-active
+  > *:not([data-popup='overlay']):not(.w-embed) {
   transform: scale(1);
 }
 

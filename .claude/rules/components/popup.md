@@ -201,3 +201,15 @@ Elements matching `[data-component='popup']` must contain:
   value without entering "Edit component" mode. Ask before restructuring
   the component's props — that's a Designer-side decision, not something
   this file drives.
+- **Designer-only Code Embed is published too** (fixed 2026-10-27): the
+  `pop_up-hide` embed (`.w-embed`, its visibility bound to the
+  "Hide Pop Up in designer" prop) is rendered on the live site as a direct
+  child of the flex wrapper. It took space next to the card and pushed the
+  card off-center to the left, and the card selector treated it as a second
+  card. `popup.css` now hides `[data-component='popup'] > .w-embed` and the
+  card rules use `:not([data-popup='overlay']):not(.w-embed)` — same fix as
+  [`announcement-popup.md`](./announcement-popup.md).
+- In the Designer the popup renders in normal page flow (top of the page),
+  not fixed/centered — `position: fixed` comes from `popup.css`, which
+  doesn't run in the canvas. `pop_up-card` has `z-index: 2` in Webflow so it
+  stays above the overlay there.
