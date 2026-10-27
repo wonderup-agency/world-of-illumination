@@ -20,6 +20,12 @@
   pointer-events: auto;
 }
 
+/* The Designer-only "hide" Code Embed is published too. As a flex child it
+   would take space next to the card and push it off-center — hide it. */
+[data-component='popup'] > .w-embed {
+  display: none;
+}
+
 [data-popup='overlay'] {
   position: absolute;
   inset: 0;
@@ -29,7 +35,7 @@
 /* The card is whichever direct child isn't the overlay — no specific class
    name required, so this keeps working no matter what the card div is
    named in Webflow. */
-[data-component='popup'] > *:not([data-popup='overlay']) {
+[data-component='popup'] > *:not([data-popup='overlay']):not(.w-embed) {
   position: relative;
   z-index: 1;
   max-width: 40rem;
@@ -40,7 +46,7 @@
   transition: transform 0.3s ease;
 }
 
-[data-component='popup'].is-active > *:not([data-popup='overlay']) {
+[data-component='popup'].is-active > *:not([data-popup='overlay']):not(.w-embed) {
   transform: scale(1);
 }
 
@@ -73,7 +79,7 @@ button[data-popup='close']:hover {
 
 @media (prefers-reduced-motion: reduce) {
   [data-component='popup'],
-  [data-component='popup'] > *:not([data-popup='overlay']) {
+  [data-component='popup'] > *:not([data-popup='overlay']):not(.w-embed) {
     transition: none;
   }
 }
