@@ -14,6 +14,10 @@
 
 export default [
   {
+    selector: "[data-component='redeem-modal']",
+    importFn: () => import('./components/redeem-modal.js'),
+  },
+  {
     selector: "[data-component='announcement-popup']",
     importFn: () => import('./components/announcement-popup.js'),
   },

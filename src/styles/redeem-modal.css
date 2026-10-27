@@ -1,0 +1,90 @@
+/* Modal is created by redeem-modal.js — no Webflow markup needed. */
+.redeem-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.3s ease,
+    visibility 0.3s ease;
+}
+
+.redeem-modal.is-active {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.redeem-modal_overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.redeem-modal_card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 56rem;
+  max-height: calc(100svh - 2rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 3rem 1.5rem 1.5rem;
+  border-radius: 1.5rem;
+  /* Webflow project variable (Base/blue 800). */
+  background: var(--base--blue-800, #1a1f39);
+  color: #fff;
+  transform: scale(0.95);
+  transition: transform 0.3s ease;
+}
+
+.redeem-modal.is-active .redeem-modal_card {
+  transform: scale(1);
+}
+
+.redeem-modal_close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  appearance: none;
+  border: none;
+  background: none;
+  color: inherit;
+  font-size: 1.25rem;
+  line-height: 1;
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
+.redeem-modal_close:hover {
+  opacity: 0.7;
+}
+
+.redeem-modal_slot {
+  min-height: 20rem;
+}
+
+@media (max-width: 767px) {
+  .redeem-modal {
+    padding: 0.5rem;
+  }
+
+  .redeem-modal_card {
+    max-height: calc(100svh - 1rem);
+    padding: 2.75rem 0.75rem 0.75rem;
+    border-radius: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .redeem-modal,
+  .redeem-modal_card {
+    transition: none;
+  }
+}
