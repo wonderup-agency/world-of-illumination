@@ -21,6 +21,7 @@ Inside each Collection Item:
 | --- | --- | --- |
 | `data-redeem="embed"` | hidden Text Block bound to **Redemption Embed** | source of widgetId/configId |
 | `data-redeem="trigger"` (optional) | the button | falls back to `.redeem-voucher` if absent |
+| `data-redeem-slug` (optional) | the item or any child, bound to **Shows › Slug** | enables the `?show=` deep link below |
 
 The modal itself is created by JS — no markup in Webflow.
 
@@ -31,6 +32,11 @@ The modal itself is created by JS — no markup in Webflow.
 - **Click**: Listener on `window` (capture) so `global.js`'s anchor handler
   can't swallow the `href="#"` click. Creates a fresh `#redeem-widget-N` div
   in the modal and calls `tx({ widgetId, configId, selector, locale })`.
+- **Deep link**: `/redemption?show=<show-slug>` opens that show's modal right
+  after init (used by the mobile nav, see [`redeem-link`](./redeem-link.md)).
+  Matches the param against each item's `data-redeem-slug`. No param, an
+  unknown slug or a show without redemption IDs → nothing happens, the page
+  loads as before. Param name: `SHOW_PARAM` (`show`).
 - **TickX loader**: if `window.tx` doesn't exist (global head script not
   installed), defines the `tx` queue and injects `box-office.js` once.
 - **Close**: ✕, overlay click or Esc. Restores scroll (`lenis.start()`),

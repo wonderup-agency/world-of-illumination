@@ -19,6 +19,7 @@
 │   │   ├── horizontal-scroll-mobile.css Structural CSS for the horizontal-scroll-mobile component
 │   │   ├── image-grow.js          Sticky-pinned section with a clip-path image grow-to-fullscreen
 │   │   ├── image-grow.css         Structural CSS for the image-grow component
+│   │   ├── redeem-link.js         Mobile nav Tickets dropdown: adds ?show=<slug> to each city's /redemption link (WOI-68)
 │   │   ├── redeem-modal.js        Redemption page: REDEEM VOUCHER opens a TickX calendar modal from the Shows CMS (styles in src/styles/redeem-modal.css)
 │   │   └── show-gallery-marquee.js Mobile-only infinite marquee for the CMS show-images gallery
 │   └── pages/

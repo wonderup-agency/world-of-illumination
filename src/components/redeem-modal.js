@@ -9,6 +9,8 @@ import './../styles/redeem-modal.css'
 // Only injected if the global script isn't already on the page.
 const TICKX_SRC = '//widgets.tickxcore.com/js/'
 const LOCALE = 'en-US'
+// Query param for the deep link (/redemption?show=<show-slug>).
+const SHOW_PARAM = 'show'
 
 /**
  * @param {HTMLElement[]} elements - All elements matching [data-component='redeem-modal']
@@ -18,6 +20,13 @@ export default function (elements) {
   const slot = modal.querySelector('[data-redeem="slot"]')
   let lastFocused = null
   let count = 0
+
+  // Deep link: /redemption?show=<show-slug> opens that show's modal on load
+  // (used by the mobile nav's REDEEM VOUCHER, see redeem-link.js).
+  const requestedSlug = new window.URLSearchParams(window.location.search).get(
+    SHOW_PARAM
+  )
+  let deepLinkIds = null
 
   elements.forEach((wrapper) => {
     wrapper.querySelectorAll('.w-dyn-item').forEach((item) => {
@@ -33,6 +42,13 @@ export default function (elements) {
         trigger.style.display = 'none'
         return
       }
+
+      // The slug attribute can sit on the item itself or on any child.
+      const slugSource = item.matches('[data-redeem-slug]')
+        ? item
+        : item.querySelector('[data-redeem-slug]')
+      const slug = slugSource?.getAttribute('data-redeem-slug')
+      if (requestedSlug && slug === requestedSlug) deepLinkIds = ids
 
       // Capture phase on window: runs before global.js's document-level
       // anchor handler, which would otherwise swallow the href="#" click.
@@ -83,6 +99,9 @@ export default function (elements) {
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && modal.classList.contains('is-active')) close()
   })
+
+  // Unknown slug or a show without redemption → page loads as usual.
+  if (deepLinkIds) open(deepLinkIds)
 }
 
 // Reads widgetId / configId out of the pasted TickX embed text.

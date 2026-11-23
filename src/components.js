@@ -14,6 +14,10 @@
 
 export default [
   {
+    selector: "[data-component='redeem-link']",
+    importFn: () => import('./components/redeem-link.js'),
+  },
+  {
     selector: "[data-component='redeem-modal']",
     importFn: () => import('./components/redeem-modal.js'),
   },
