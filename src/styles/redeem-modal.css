@@ -2,7 +2,8 @@
 .redeem-modal {
   position: fixed;
   inset: 0;
-  z-index: 1001;
+  /* Above the fixed navbar (.nav_component, z-index 9999). */
+  z-index: 10000;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -33,9 +34,9 @@
   width: 100%;
   max-width: 56rem;
   max-height: calc(100svh - 2rem);
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  padding: 3rem 1.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   border-radius: 1.5rem;
   /* Webflow project variable (Base/blue 800). */
   background: var(--base--blue-800, #1a1f39);
@@ -48,10 +49,24 @@
   transform: scale(1);
 }
 
+.redeem-modal_header {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1rem 1rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.redeem-modal_title {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
 .redeem-modal_close {
-  position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
+  flex: none;
   appearance: none;
   border: none;
   background: none;
@@ -67,18 +82,34 @@
 }
 
 .redeem-modal_slot {
+  flex: 1;
   min-height: 20rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 1.5rem;
 }
 
+/* Mobile: full-screen sheet, header (title + close) always visible. */
 @media (max-width: 767px) {
   .redeem-modal {
-    padding: 0.5rem;
+    padding: 0;
   }
 
   .redeem-modal_card {
-    max-height: calc(100svh - 1rem);
-    padding: 2.75rem 0.75rem 0.75rem;
-    border-radius: 1rem;
+    max-width: none;
+    height: 100vh;
+    height: 100svh;
+    max-height: none;
+    border-radius: 0;
+  }
+
+  .redeem-modal_header {
+    padding: 0.75rem 0.5rem 0.75rem 1rem;
+  }
+
+  .redeem-modal_slot {
+    min-height: 0;
+    padding: 0.75rem 0.5rem;
   }
 }
 

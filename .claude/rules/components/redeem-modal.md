@@ -39,6 +39,13 @@ The modal itself is created by JS — no markup in Webflow.
   loads as before. Param name: `SHOW_PARAM` (`show`).
 - **TickX loader**: if `window.tx` doesn't exist (global head script not
   installed), defines the `tx` queue and injects `box-office.js` once.
+- **Layout**: header bar ("Redeem Voucher" + ✕) stays fixed while the
+  calendar scrolls below it. z-index `10000`, above the fixed navbar
+  (`.nav_component`, 9999) — at 1001 the navbar covered the ✕ on mobile.
+  Mobile (≤767px): full-screen sheet, no rounded corners.
+- **Chat**: hides the Zendesk launcher (`zE('messenger', 'hide')`) while
+  open and shows it again on close; it covered the calendar on mobile.
+  No-op if Zendesk isn't on the page.
 - **Close**: ✕, overlay click or Esc. Restores scroll (`lenis.start()`),
   clears the widget, returns focus.
 - **Resize / Breakpoint**: Not used.
@@ -55,6 +62,10 @@ The modal itself is created by JS — no markup in Webflow.
 `[data-redeem="embed"]` element and a `.redeem-voucher` / `[data-redeem="trigger"]`.
 
 ## Notes
+
+- The calendar itself is TickX's own iframe and can't be resized from here
+  (scaling it would make the days hard to tap). The "Enter Text Here" button
+  under it comes from the TickX widget config, not from this component.
 
 - One modal for all cards avoids TickX's repeated `#tickx-widget` id.
 - The pasted snippet's own `selector: '#tickx-widget'` is ignored — only the

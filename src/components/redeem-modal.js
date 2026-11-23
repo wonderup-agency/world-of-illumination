@@ -80,6 +80,7 @@ export default function (elements) {
     modal.setAttribute('aria-hidden', 'false')
     document.body.style.overflow = 'hidden'
     window.lenis?.stop()
+    toggleChat(false)
     modal.querySelector('[data-redeem="close"]').focus()
   }
 
@@ -88,6 +89,7 @@ export default function (elements) {
     modal.setAttribute('aria-hidden', 'true')
     document.body.style.overflow = ''
     window.lenis?.start()
+    toggleChat(true)
     slot.innerHTML = ''
     lastFocused?.focus()
   }
@@ -113,6 +115,16 @@ function parseEmbed(source) {
   return widgetId && configId ? { widgetId, configId } : null
 }
 
+// Hides the Zendesk chat launcher while the modal is open (it sits on top of
+// the calendar on mobile). No-op if Zendesk isn't on the page.
+function toggleChat(show) {
+  try {
+    window.zE?.('messenger', show ? 'show' : 'hide')
+  } catch {
+    // Zendesk not ready — nothing to hide.
+  }
+}
+
 // Defines the tx() queue and injects box-office.js once, if missing.
 function ensureTickx() {
   if (window.tx) return
@@ -134,7 +146,10 @@ function buildModal() {
   modal.innerHTML = `
     <div class="redeem-modal_overlay" data-redeem="overlay"></div>
     <div class="redeem-modal_card">
-      <button type="button" class="redeem-modal_close" data-redeem="close" aria-label="Close">✕</button>
+      <div class="redeem-modal_header">
+        <span class="redeem-modal_title">Redeem Voucher</span>
+        <button type="button" class="redeem-modal_close" data-redeem="close" aria-label="Close">✕</button>
+      </div>
       <div class="redeem-modal_slot" data-redeem="slot"></div>
     </div>`
   document.body.appendChild(modal)
