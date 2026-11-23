@@ -209,6 +209,11 @@ Elements matching `[data-component='popup']` must contain:
   card. `popup.css` now hides `[data-component='popup'] > .w-embed` and the
   card rules use `:not([data-popup='overlay']):not(.w-embed)` — same fix as
   [`announcement-popup.md`](./announcement-popup.md).
+- **z-index 10000** (raised 2026-11-23 from 999): the navbar
+  (`.nav_component`) is fixed at z-index 9999, so at 999 it covered the top of
+  the card — including the ✕ — on mobile. Same fix as
+  [`redeem-modal`](./redeem-modal.md). `announcement-popup` sits one above
+  (10001).
 - In the Designer the popup renders in normal page flow (top of the page),
   not fixed/centered — `position: fixed` comes from `popup.css`, which
   doesn't run in the canvas. `pop_up-card` has `z-index: 2` in Webflow so it

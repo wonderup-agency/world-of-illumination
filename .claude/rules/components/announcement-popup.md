@@ -46,7 +46,9 @@ data-component="announcement-popup"
 ## Dependencies
 
 - `src/styles/announcement-popup.css` — fixed overlay + fade/scale, scoped to
-  this component (z-index 1000, above `popup`).
+  this component (z-index 10001: above the fixed navbar, 9999, and above
+  `popup`, 10000 — at 1000 the navbar covered the top of the card and the ✕
+  on mobile; raised 2026-11-23).
 - `src/styles/popup.css` — shared `[data-popup='overlay']` / `close` rules.
 
 ## DOM Expectations
