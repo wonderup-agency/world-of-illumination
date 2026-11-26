@@ -1,0 +1,4 @@
+/* Hidden until schedule.js confirms "now" is inside the date window */
+[data-component='schedule']:not(.is-scheduled) {
+  display: none !important;
+}

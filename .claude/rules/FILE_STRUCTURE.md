@@ -20,8 +20,11 @@
 │   │   ├── image-grow.js          Sticky-pinned section with a clip-path image grow-to-fullscreen
 │   │   ├── image-grow.css         Structural CSS for the image-grow component
 │   │   ├── redeem-link.js         Mobile nav Tickets dropdown: adds ?show=<slug> to each city's /redemption link (WOI-68)
+│   │   ├── schedule.js            Shows a wrapper only inside a date window (data-schedule-start/end); styles in src/styles/schedule.css
 │   │   ├── redeem-modal.js        Redemption page: REDEEM VOUCHER opens a TickX calendar modal from the Shows CMS (styles in src/styles/redeem-modal.css)
 │   │   └── show-gallery-marquee.js Mobile-only infinite marquee for the CMS show-images gallery
+│   ├── utils/
+│   │   └── date-window.js         Shared date parsing/window check + ?preview-date (used by popup, schedule)
 │   └── pages/
 │       └── .gitkeep               Per-page standalone bundles go here
 │
@@ -89,6 +92,7 @@
 | Page-specific bundle   | `src/pages/<name>.js` (use `npm run create-page`)             |
 | Nested page bundle     | `src/pages/<section>/<name>.js` (e.g., `blog/post.js`)        |
 | Project config         | `src/config.js`                                               |
+| Shared browser helpers | `src/utils/<name>.js` (named exports, imported by components)  |
 | CSS                    | Import in any JS file — extracts to `dist/styles.css`         |
 | Node scripts           | `scripts/`                                                    |
 | Component docs         | `.claude/rules/components/<name>.md`                          |

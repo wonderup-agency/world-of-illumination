@@ -14,6 +14,10 @@
 
 export default [
   {
+    selector: "[data-component='schedule']",
+    importFn: () => import('./components/schedule.js'),
+  },
+  {
     selector: "[data-component='redeem-link']",
     importFn: () => import('./components/redeem-link.js'),
   },

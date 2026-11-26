@@ -4,6 +4,7 @@ Webflow attribute: data-component="popup"
 */
 
 import './../styles/popup.css'
+import { isWithinWindow } from '../utils/date-window.js'
 
 // Small pause before the popup appears, so it doesn't flash the instant the
 // page paints. Overridable per instance via data-popup-delay (ms).
@@ -28,7 +29,7 @@ export default function (elements) {
     const startDate = popup.getAttribute('data-popup-start-date')
     const endDate = popup.getAttribute('data-popup-end-date')
 
-    if (!isWithinDateRange(startDate, endDate)) {
+    if (!isWithinWindow(startDate, endDate)) {
       console.log(
         '[popup] Outside configured date range (data-popup-start-date/data-popup-end-date) — not showing.'
       )
@@ -101,45 +102,4 @@ function ensureCloseButton(popup, overlay) {
   card.appendChild(button)
 
   return [button]
-}
-
-// Parses a "YYYY-MM-DD" string as a *local* date (midnight in the visitor's
-// own timezone) — deliberately not `new Date("YYYY-MM-DD")`, which the spec
-// parses as UTC midnight and would silently shift the cutoff by several
-// hours depending on the visitor's timezone. Returns null for anything
-// missing/malformed so a typo just falls back to "no limit" instead of
-// crashing or hiding the popup forever.
-function parseLocalDate(value) {
-  if (!value) return null
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value.trim())
-  if (!match) return null
-  const [, year, month, day] = match
-  const date = new Date(Number(year), Number(month) - 1, Number(day))
-  return Number.isNaN(date.getTime()) ? null : date
-}
-
-// True when there's no date gating at all (both attributes empty — the
-// popup always shows, same as before this feature existed), or when "now"
-// falls inside the configured range. The end date counts through the end
-// of that whole day, not just its midnight.
-function isWithinDateRange(startDateAttr, endDateAttr) {
-  const start = parseLocalDate(startDateAttr)
-  const end = parseLocalDate(endDateAttr)
-  if (!start && !end) return true
-
-  const now = new Date()
-  if (start && now < start) return false
-  if (end) {
-    const endOfDay = new Date(
-      end.getFullYear(),
-      end.getMonth(),
-      end.getDate(),
-      23,
-      59,
-      59,
-      999
-    )
-    if (now > endOfDay) return false
-  }
-  return true
 }

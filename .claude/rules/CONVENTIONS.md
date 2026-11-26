@@ -48,6 +48,14 @@ export default function (elements) {
 - `resize` is debounced (150ms) — fires once after the user stops resizing
 - `breakpoint` fires only when crossing a Webflow breakpoint threshold. Values: `1920` (2XL), `1440` (XL), `1280` (Large), `992` (Desktop/base), `768` (Tablet), `480` (Mobile Landscape), `0` (Mobile Portrait). Receives the new and previous breakpoint values
 
+### Shared helpers in `src/utils/`
+
+Logic needed by more than one component (e.g. date windows, used by `popup`
+and `schedule`) lives in `src/utils/<name>.js` as named exports and is
+imported directly — not copied into each component. Keep it plain DOM/JS
+with no side effects on import. This is for small shared logic only; similar
+*components* still stay independent (see `tapes` vs `marquee`).
+
 ## Component Registration
 
 Components are registered in `src/components.js` as an array of `{ selector, importFn }` objects. The `create-component` script manages this automatically. Manual edits follow the same pattern:

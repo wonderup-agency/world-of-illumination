@@ -70,13 +70,19 @@ Optional attributes on the wrapper:
 
 - `data-popup-delay="600"` — milliseconds to wait after the component loads
   before showing the popup (default `600`, see `DEFAULT_DELAY`).
-- `data-popup-start-date="2026-09-04"` / `data-popup-end-date="2026-09-13"` —
-  date window (both optional, independent — set one, both, or neither). Format
-  is always `YYYY-MM-DD`. Outside the window the popup doesn't show at all
-  (not even the overlay/close button get set up) — same as if the component
-  weren't on the page. Leave both empty/absent for the original
-  always-on behavior. The end date counts through 23:59:59 of that day, not
-  just its midnight — see Notes.
+- `data-popup-start-date` / `data-popup-end-date` — date window (both
+  optional, independent — set one, both, or neither). Two formats, parsed by
+  the shared `src/utils/date-window.js` (same as [`schedule`](./schedule.md)):
+  - `YYYY-MM-DD` (e.g. `2026-09-04`) — midnight in the visitor's own
+    timezone; a date-only end counts through the end of that day.
+  - Date-time with an explicit offset, e.g. `2026-11-27T00:00:00-07:00` —
+    an exact instant, the same for every visitor (Arizona is `-07:00` all
+    year). The end is exclusive. Added 2026-11-25 for Black Friday (WOI-72),
+    where "midnight" had to mean Arizona time.
+  Outside the window the popup doesn't show at all (not even the
+  overlay/close button get set up). Leave both empty/absent for the
+  original always-on behavior. `?preview-date=<date>` in the URL replaces
+  "now" to preview a window before it starts.
 
 ## Behavior
 
@@ -183,17 +189,13 @@ Elements matching `[data-component='popup']` must contain:
   the width here, not in Webflow, if it ever needs to be different; a
   Designer-side width/max-width change on the card class will have no visible
   effect.
-- **Date window parsing (`parseLocalDate`)**: `data-popup-start-date`/
-  `data-popup-end-date` are parsed as a *local* date (midnight in the
-  visitor's own timezone) via manual `YYYY-MM-DD` splitting — deliberately
-  not `new Date("YYYY-MM-DD")`, which the JS spec parses as UTC midnight and
-  would silently shift the cutoff by several hours depending on the
-  visitor's timezone (this project's shows tour multiple US states/
-  timezones). A malformed or partial value (wrong format, typo) parses to
-  `null` and is treated as "no limit" on that side rather than crashing or
-  permanently hiding the popup. The end date's comparison is built up to
-  `23:59:59.999` of that day so the last day is fully included, not cut off
-  at its midnight.
+- **Date window parsing** lives in `src/utils/date-window.js` (moved out of
+  `popup.js` on 2026-11-25 so `schedule` shares it). `YYYY-MM-DD` is parsed
+  manually as a local date — deliberately not `new Date("YYYY-MM-DD")`, which
+  the spec parses as UTC midnight and would shift the cutoff by several hours
+  depending on the visitor's timezone. Date-times must carry an offset or `Z`
+  so they never depend on the visitor. A malformed value parses to `null` and
+  means "no limit" on that side.
 - **Component is a Webflow Component now**: added 2026-09-04. Custom
   attributes (including the two date ones above and `data-popup-delay`) are
   set the same way as on any element — inside the component definition, or
